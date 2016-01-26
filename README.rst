@@ -27,15 +27,29 @@ Hackishly wonderfully so.
 A Word of Warning!
 ==================
 
-The whole point of hashing is that you vet the packages that you use
+The whole point of hashing is that you **vet the packages** that you use
 on your laptop and that they haven't been tampered with. Then you
 can confidently install them on a server.
 
 This tool downloads from PyPI (over HTTPS) and runs ``pip hash``
 on the downloaded files.
 
-You still need to check that the packages that are downloaded
-are sane.
+You should check that the packages that are downloaded
+are sane and not tampered with. The way you do that is to run
+``hashin`` as normal but with the ``--verbose`` flag. When you do that
+it will print where it downloaded the relevant files and those
+files are not deleted. For example::
+
+    $ hashin --verbose bgg /tmp/reqs.txt
+    https://pypi.python.org/pypi/bgg/json
+    * Latest version for 0.22.1
+    * Found URL https://pypi.python.org/packages/2.7/b/bgg/bgg-0.22.1-py2-none-any.whl
+    *   Re-using /var/folders/1x/2hf5hbs902q54g3bgby5bzt40000gn/T/bgg-0.22.1-py2-none-any.whl
+    *   Hash e5172c3fda0e8a42d1797fd1ff75245c3953d7c8574089a41a219204dbaad83d
+    * Found URL https://pypi.python.org/packages/source/b/bgg/bgg-0.22.1.tar.gz
+    *   Re-using /var/folders/1x/2hf5hbs902q54g3bgby5bzt40000gn/T/bgg-0.22.1.tar.gz
+    *   Hash aaa53aea1cecb8a6e1288d6bfe52a51408a264a97d5c865c38b34ae16c9bff88
+    * Editing /tmp/reqs.txt
 
 You might not have time to go through the lines one by one
 but you should be aware that the vetting process is your
