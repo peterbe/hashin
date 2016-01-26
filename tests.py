@@ -8,17 +8,17 @@ from unittest import TestCase
 from functools import wraps
 from glob import glob
 
+import mock
+
+import hashin
+
+
 if sys.version_info >= (3,):
     # As in, Python 3
     from io import StringIO
     STR_TYPE = str
 else:  # Python 2
     from StringIO import StringIO
-
-
-import mock
-
-import hashin
 
 
 @contextmanager
