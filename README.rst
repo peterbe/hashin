@@ -94,6 +94,12 @@ This program is a "fork" of https://pypi.python.org/pypi/peepin
 https://pypi.python.org/pypi/peep/ but the functionality of ``peep``
 has been put directly into ``pip`` as of version 8.
 
+Future
+======
+
+If this script proves itself to work and be useful, I hope we can
+put it directly into ``pip``.
+
 Version History
 ===============
 
