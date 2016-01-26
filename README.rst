@@ -5,6 +5,9 @@ hashin
 .. image:: https://travis-ci.org/peterbe/hashin.svg?branch=master
     :target: https://travis-ci.org/peterbe/hashin
 
+.. image:: https://badge.fury.io/py/hashin.svg
+    :target: https://pypi.python.org/pypi/hashin
+
 Helps you write your ``requirements.txt`` with hashes so you can
 install with ``pip install --require-hashes -r ...``
 
