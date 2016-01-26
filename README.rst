@@ -12,11 +12,11 @@ If you want to add a package or edit the version of one you're currently
 using you have to do the following steps:
 
 1. Go to pypi for that package
-2. Download the .tgz file
-3. Possibly download the .whl file
-4. Run `pip hash downloadedpackage-1.2.3.tgz`
-5. Run `pip hash downloadedpackage-1.2.3.whl`
-6. Edit requirements.txt
+2. Download the ``.tgz`` file
+3. Possibly download the ``.whl`` file
+4. Run ``pip hash downloadedpackage-1.2.3.tgz``
+5. Run ``pip hash downloadedpackage-1.2.3.whl``
+6. Edit ``requirements.txt``
 
 This script does all those things.
 Hackishly wonderfully so.
@@ -71,7 +71,7 @@ requirements files.
 Runnings tests
 ==============
 
-Simply run:
+Simply run::
 
     python setup.py test
 
@@ -80,7 +80,7 @@ Debugging
 =========
 
 To avoid having to install ``hashin`` just to test it or debug a feature
-you can simply just run it like this:
+you can simply just run it like this::
 
     touch /tmp/whatever.txt
     python hashin.py --verbose Django /tmp/whatever.txt
