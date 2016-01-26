@@ -10,12 +10,12 @@ import os
 import sys
 import json
 
+import pip
+
 if sys.version_info >= (3,):
     from urllib.request import urlopen
 else:
     from urllib import urlopen
-
-import pip
 
 
 major_pip_version = int(pip.__version__.split('.')[0])
