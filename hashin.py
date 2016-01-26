@@ -91,7 +91,7 @@ def amend_requirements_content(requirements, package, new_lines):
         # easy peasy
         if requirements:
             requirements = requirements.strip() + '\n'
-        requirements += new_lines.strip() + '\n\n'
+        requirements += new_lines.strip() + '\n'
     else:
         # need to replace the existing
         lines = []

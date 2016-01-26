@@ -103,5 +103,8 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.2
+  * Last character a *single* newline. Not two.
+
 0.1
   * First, hopefully, working version.

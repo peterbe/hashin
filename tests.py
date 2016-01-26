@@ -98,7 +98,7 @@ class Tests(TestCase):
         new_lines = """
 autocompeter==1.2.3 \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
-        """.strip() + '\n\n'
+        """.strip() + '\n'
         result = hashin.amend_requirements_content(
             requirements, 'autocompeter', new_lines
         )
@@ -239,6 +239,7 @@ autocompeter==1.2.3  \\
             self.assertEqual(retcode, 0)
             with open(filename) as f:
                 output = f.read()
+            assert output.endswith('\n')
             lines = output.splitlines()
 
             self.assertEqual(
@@ -259,10 +260,6 @@ autocompeter==1.2.3  \\
                 lines[3],
                 '    --hash=sha256:b2f06d3c4d148b648768abab5086afac0414'
                 'e49eb4813e1f3c450b975c77cee9'
-            )
-            self.assertEqual(
-                lines[4],
-                ''  # remember, lines == output.splitlines()
             )
 
             # Now check the verbose output
@@ -293,6 +290,7 @@ autocompeter==1.2.3  \\
             self.assertEqual(retcode, 0)
             with open(filename) as f:
                 output = f.read()
+            assert output.endswith('\n')
             lines = output.splitlines()
             self.assertEqual(
                 lines[0],
@@ -315,8 +313,4 @@ autocompeter==1.2.3  \\
                 '    --hash=sha512:c32e6d9fb09dc36ab9222c4606a1f43a2dcc183a8'
                 'c64bdd9199421ef779072c174fa044b155babb12860cf000e36bc4d3586'
                 '94fa22420c997b1dd75b623d4daa'
-            )
-            self.assertEqual(
-                lines[4],
-                ''  # remember, lines == output.splitlines()
             )
