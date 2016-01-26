@@ -1,3 +1,4 @@
+import sys
 import json
 import os
 from shutil import rmtree
@@ -6,7 +7,14 @@ from contextlib import contextmanager
 from unittest import TestCase
 from functools import wraps
 from glob import glob
-from StringIO import StringIO
+
+if sys.version_info >= (3,):
+    # As in, Python 3
+    from io import StringIO
+    STR_TYPE = str
+else:  # Python 2
+    from StringIO import StringIO
+
 
 import mock
 
