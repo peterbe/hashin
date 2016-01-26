@@ -8,4 +8,7 @@ python:
 branches:
   only:
     - master
+before_install:
+  # twine is necessary so that travis can deploy
+  - travis_retry pip install twine pip>=8.0
 script: python setup.py test
