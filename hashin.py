@@ -17,6 +17,19 @@ if sys.version_info >= (3,):
 else:
     from urllib import urlopen
 
+    if sys.version_info < (2, 7, 9):
+        import warnings
+        warnings.warn(
+            "In Python 2.7.9, the built-in urllib.urlopen() got upgraded "
+            "so that it, by default, does HTTPS certificate verification. "
+            "All prior versions do not. That means you run the risk of "
+            "downloading from a server that claims (man-in-the-middle "
+            "attack) to be https://pypi.python.org but actually is not. "
+            "Consider upgrading your version of Python and/or assert that "
+            "your connection with https://pypi.python.org is valid on "
+            "this network."
+        )
+
 
 major_pip_version = int(pip.__version__.split('.')[0])
 if major_pip_version < 8:
