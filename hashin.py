@@ -25,9 +25,7 @@ else:
             "All prior versions do not. That means you run the risk of "
             "downloading from a server that claims (man-in-the-middle "
             "attack) to be https://pypi.python.org but actually is not. "
-            "Consider upgrading your version of Python and/or assert that "
-            "your connection with https://pypi.python.org is valid on "
-            "this network."
+            "Consider upgrading your version of Python."
         )
 
 
