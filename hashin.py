@@ -180,7 +180,7 @@ def main():
     )
     parser.add_argument(
         'requirements_file',
-        help="requirements file to write to (default requirementst.txt)",
+        help="requirements file to write to (default requirements.txt)",
         default='requirements.txt', nargs='?'
     )
     parser.add_argument(
