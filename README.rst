@@ -120,6 +120,9 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.3
+  * Issue a warning for users of Python before version 2.7.9.
+
 0.2
   * Last character a *single* newline. Not two.
 
