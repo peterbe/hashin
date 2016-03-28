@@ -85,6 +85,33 @@ directory you can do this::
 If there's not output. It worked. Check how it edited your
 requirements files.
 
+Filtering releases by Python version
+====================================
+
+Some requirements have many releases built for different versions of Python and
+different architectures. These hashes aren't useful in some cases, if those
+wheels don't work with your project. ``hashin`` can filter on the Python
+version to skip these extraneous hashes.
+
+For example, the ``cffi`` package offers wheels built for many versions of
+CPython from 2.6 to 3.5. To select only one of them, you can use the
+``--python-version`` option::
+
+    hashin "cffi==1.5.2" --python-version 3.5
+
+If you need to support multiple versions, you can pass this option multiple
+times::
+
+    hashin "cffi==1.5.2" --python-version 2.7 --python-version 3.5
+
+``hashin`` will expand these Python versions to a full list of identifers that
+could be found on PyPI. For example, ``3.5`` will expand to match any of
+``3.5``, ``py3``, ``py3.5``, ``py2.py3``, or ``cp3.5``. You can also specify
+these exact identifiers directly, if you need something specific.
+
+The ``source`` release is always automatically included. ``pip`` will use
+this as a fallback in the case a suitable wheel cannot be found.
+
 Runnings tests
 ==============
 
@@ -119,6 +146,9 @@ put it directly into ``pip``.
 
 Version History
 ===============
+
+0.4
+  * Add filtering of package releases by Python version.
 
 0.3
   * Issue a warning for users of Python before version 2.7.9.

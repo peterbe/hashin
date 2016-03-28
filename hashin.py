@@ -7,8 +7,10 @@ from __future__ import print_function
 import cgi
 import tempfile
 import os
+import re
 import sys
 import json
+from itertools import chain
 
 import pip
 
@@ -53,7 +55,7 @@ def _download(url, binary=False):
     return r.read().decode(encoding)
 
 
-def run(spec, file, algorithm, verbose=False):
+def run(spec, file, algorithm, python_versions=None, verbose=False):
     if '==' in spec:
         package, version = spec.split('==')
     else:
@@ -68,15 +70,37 @@ def run(spec, file, algorithm, verbose=False):
         if verbose:
             _verbose("Latest version for", version)
 
-    # needs to be turned into a list so we know its length
-    hashes = list(get_hashes(data, version, algorithm, verbose=verbose))
+    try:
+        releases = data['releases'][version]
+    except KeyError:
+        raise PackageError('No data found for version {0}'.format(version))
+
+    if python_versions is not None:
+        releases = filter_releases(releases, python_versions)
+
+    if not releases:
+        if python_versions:
+            raise PackageError(
+                "No releases could be found for {0} matching Python versions {1}"
+                .format(spec, python_versions)
+            )
+        else:
+            raise PackageError(
+                "No releases could be found for {0}"
+                .format(spec, python_versions)
+            )
+
+    add_hashes(releases, algorithm, verbose=verbose)
 
     new_lines = ''
     new_lines = '{0}=={1} \\\n'.format(package, version)
     padding = ' ' * 4
-    for i, h in enumerate(hashes):
-        new_lines += '{0}--hash={1}:{2}'.format(padding, algorithm, h)
-        if i != len(hashes) - 1:
+    for i, release in enumerate(releases):
+        new_lines += (
+            '{0}--hash={1}:{2}'
+            .format(padding, algorithm, release['hash'], release['url'])
+        )
+        if i != len(releases) - 1:
             new_lines += ' \\'
         new_lines += '\n'
 
@@ -124,6 +148,109 @@ def get_latest_version(data):
     return data['info']['version']
 
 
+def expand_python_version(version):
+    """
+    Expand Python versions to all identifiers used on PyPI.
+
+    >>> expand_python_version('3.5')
+    ['3.5', 'py3', 'py2.py3', 'cp35']
+    """
+    if not re.match(r'^\d\.\d$', version):
+        return [version]
+
+    major, minor = version.split('.')
+    patterns = [
+        '{major}.{minor}',
+        'cp{major}{minor}',
+        'py{major}',
+        'py{major}.{minor}',
+        'source',
+        'py2.py3',
+    ]
+    return set(pattern.format(major=major, minor=minor) for pattern in patterns)
+
+
+# This should match the naming convention laid out in PEP 0427
+# url = 'https://pypi.python.org/packages/3.4/P/Pygments/Pygments-2.1-py3-none-any.whl'
+CLASSIFY_WHEEL_RE = re.compile('''
+    ^https://pypi.python.org/packages/[^/]+/[^/]/[^/]+/
+    (?P<package>.+)-
+    (?P<version>\d[^-]*)-
+    (?P<python_version>[^-]+)-
+    (?P<abi>[^-]+)-
+    (?P<platform>.+)
+    .(?P<format>whl)
+    (\#md5=.*)?
+    $
+''', re.VERBOSE)
+
+CLASSIFY_EGG_RE = re.compile('''
+    ^https://pypi.python.org/packages/[^/]+/[^/]/[^/]+/
+    (?P<package>.+)-
+    (?P<version>\d[^-]*)-
+    (?P<python_version>[^-]+)
+    (-(?P<platform>[^\.]+))?
+    .(?P<format>egg)
+    (\#md5=.*)?
+    $
+''', re.VERBOSE)
+
+CLASSIFY_ARCHIVE_RE = re.compile('''
+    ^https://pypi.python.org/packages/[^/]+/[^/]/[^/]+/
+    (?P<package>.+)-
+    (?P<version>\d[^-]*)
+    .(?P<format>tar.(gz|bz2)|zip)
+    (\#md5=.*)?
+    $
+''', re.VERBOSE)
+
+CLASSIFY_EXE_RE = re.compile('''
+    ^https://pypi.python.org/packages/[^/]+/[^/]/[^/]+/
+    (?P<package>.+)-
+    (?P<version>\d[^-]*)-
+    ((?P<platform>[^-]*)-)?
+    (?P<python_version>[^-]+)
+    .(?P<format>exe)
+    (\#md5=.*)?
+    $
+''', re.VERBOSE)
+
+
+def release_url_metadata(url):
+    defaults = {
+        'package': None,
+        'version': None,
+        'python_version': None,
+        'abi': None,
+        'platform': None,
+        'format': None,
+    }
+    simple_classifiers = [CLASSIFY_WHEEL_RE, CLASSIFY_EGG_RE, CLASSIFY_EXE_RE]
+    for classifier in simple_classifiers:
+        match = classifier.match(url)
+        if match:
+            defaults.update(match.groupdict())
+            return defaults
+
+    match = CLASSIFY_ARCHIVE_RE.match(url)
+    if match:
+        defaults.update(match.groupdict())
+        defaults['python_version'] = 'source'
+        return defaults
+
+    raise PackageError('Unrecognizable url: ' + url)
+
+
+def filter_releases(releases, python_versions):
+    python_versions = list(chain.from_iterable(expand_python_version(v) for v in python_versions))
+    filtered = []
+    for release in releases:
+        metadata = release_url_metadata(release['url'])
+        if metadata['python_version'] in python_versions:
+            filtered.append(release)
+    return filtered
+
+
 def get_package_data(package, verbose=False):
     url = 'https://pypi.python.org/pypi/%s/json' % package
     if verbose:
@@ -135,12 +262,7 @@ def get_package_data(package, verbose=False):
     return content
 
 
-def get_hashes(data, version, algorithm, verbose=False):
-    yielded = []
-    try:
-        releases = data['releases'][version]
-    except KeyError:
-        raise PackageError('No data found for version {0}'.format(version))
+def add_hashes(releases, algorithm, verbose=False):
     for found in releases:
         url = found['url']
         if verbose:
@@ -157,18 +279,9 @@ def get_hashes(data, version, algorithm, verbose=False):
                 f.write(_download(url, binary=True))
         elif verbose:
             _verbose("  Re-using", filename)
-        hash_ = pip.commands.hash._hash_of_file(filename, algorithm)
-        if hash_ in yielded:
-            continue
+        found['hash'] = pip.commands.hash._hash_of_file(filename, algorithm)
         if verbose:
-            _verbose("  Hash", hash_)
-        yield hash_
-        yielded.append(hash_)
-
-    if not yielded:
-        raise PackageError(
-            "No packages could be found on {0}".format(url)
-        )
+            _verbose("  Hash", found['hash'])
 
 
 def main():
@@ -189,7 +302,17 @@ def main():
         default='sha256', nargs='?'
     )
     parser.add_argument(
-        "--verbose", help="Verbose output", action="store_true"
+        "-v, --verbose",
+        help="Verbose output",
+        action="store_true",
+        dest='verbose',
+    )
+    parser.add_argument(
+        '-p, --python-version',
+        help='Python version to add wheels for. May be used multiple times.',
+        action='append',
+        default=[],
+        dest='python_version',
     )
 
     args = parser.parse_args()
@@ -197,6 +320,7 @@ def main():
         args.package,
         args.requirements_file,
         args.algorithm,
+        args.python_version,
         verbose=args.verbose,
     )
 

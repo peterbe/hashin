@@ -314,3 +314,109 @@ autocompeter==1.2.3  \\
                 'c64bdd9199421ef779072c174fa044b155babb12860cf000e36bc4d3586'
                 '94fa22420c997b1dd75b623d4daa'
             )
+
+    def test_filter_releases(self):
+        releases = [
+            {
+                'url': 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+            },
+            {
+                'url': 'https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+            },
+            {
+                'url': 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+            },
+        ]
+
+        # With no filters, no releases are included
+        self.assertEqual(hashin.filter_releases(releases, []), [])
+
+        # With filters, other Python versions are filtered out.
+        filtered = hashin.filter_releases(releases, ['py2'])
+        self.assertEqual(filtered, [releases[0]])
+
+        # Multiple filters work
+        filtered = hashin.filter_releases(releases, ['py3', 'source'])
+        self.assertEqual(filtered, [releases[1], releases[2]])
+
+    def test_release_url_metadata_python(self):
+        url = 'https://pypi.python.org/packages/3.4/P/Pygments/Pygments-2.1-py3-none-any.whl'
+        self.assertEqual(hashin.release_url_metadata(url), {
+            'package': 'Pygments',
+            'version': '2.1',
+            'python_version': 'py3',
+            'abi': 'none',
+            'platform': 'any',
+            'format': 'whl',
+        })
+        url = 'https://pypi.python.org/packages/2.7/J/Jinja2/Jinja2-2.8-py2.py3-none-any.whl'
+        self.assertEqual(hashin.release_url_metadata(url), {
+            'package': 'Jinja2',
+            'version': '2.8',
+            'python_version': 'py2.py3',
+            'abi': 'none',
+            'platform': 'any',
+            'format': 'whl',
+        })
+        url = 'https://pypi.python.org/packages/cp35/c/cffi/cffi-1.5.2-cp35-none-win32.whl'
+        self.assertEqual(hashin.release_url_metadata(url), {
+            'package': 'cffi',
+            'version': '1.5.2',
+            'python_version': 'cp35',
+            'abi': 'none',
+            'platform': 'win32',
+            'format': 'whl',
+        })
+        url = ('https://pypi.python.org/packages/source/f/factory_boy/'
+               'factory_boy-2.6.0.tar.gz#md5=d61ee02c6ac8d992f228c0346bd52f32')
+        self.assertEqual(hashin.release_url_metadata(url), {
+            'package': 'factory_boy',
+            'version': '2.6.0',
+            'python_version': 'source',
+            'abi': None,
+            'platform': None,
+            'format': 'tar.gz',
+        })
+        url = ('https://pypi.python.org/packages/source/d/django-reversion/'
+               'django-reversion-1.10.0.tar.gz')
+        self.assertEqual(hashin.release_url_metadata(url), {
+            'package': 'django-reversion',
+            'version': '1.10.0',
+            'python_version': 'source',
+            'abi': None,
+            'platform': None,
+            'format': 'tar.gz',
+        })
+        url = 'https://pypi.python.org/packages/2.6/g/greenlet/greenlet-0.4.9-py2.6-win-amd64.egg'
+        self.assertEqual(hashin.release_url_metadata(url), {
+            'package': 'greenlet',
+            'version': '0.4.9',
+            'python_version': 'py2.6',
+            'abi': None,
+            'platform': 'win-amd64',
+            'format': 'egg',
+        })
+        url = 'https://pypi.python.org/packages/2.4/p/pytz/pytz-2015.7-py2.4.egg'
+        self.assertEqual(hashin.release_url_metadata(url), {
+            'package': 'pytz',
+            'version': '2015.7',
+            'python_version': 'py2.4',
+            'abi': None,
+            'platform': None,
+            'format': 'egg',
+        })
+        url = 'https://pypi.python.org/packages/2.7/g/gevent/gevent-1.1.0.win-amd64-py2.7.exe'
+        self.assertEqual(hashin.release_url_metadata(url), {
+            'package': 'gevent',
+            'version': '1.1.0.win',
+            'python_version': 'py2.7',
+            'abi': None,
+            'platform': 'amd64',
+            'format': 'exe',
+        })
+
+    def test_expand_python_version(self):
+        self.assertEqual(sorted(hashin.expand_python_version('2.7')),
+                         ['2.7', 'cp27', 'py2', 'py2.7', 'py2.py3', 'source'])
+        self.assertEqual(sorted(hashin.expand_python_version('3.5')),
+                         ['3.5', 'cp35', 'py2.py3', 'py3', 'py3.5', 'source'])
