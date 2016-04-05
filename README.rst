@@ -147,6 +147,9 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.4.1
+  * Fix PackageError if no Python version is defined.
+
 0.4
   * Add filtering of package releases by Python version.
 

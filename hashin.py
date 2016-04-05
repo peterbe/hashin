@@ -75,7 +75,7 @@ def run(spec, file, algorithm, python_versions=None, verbose=False):
     except KeyError:
         raise PackageError('No data found for version {0}'.format(version))
 
-    if python_versions is not None:
+    if python_versions:
         releases = filter_releases(releases, python_versions)
 
     if not releases:
