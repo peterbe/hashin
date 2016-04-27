@@ -414,6 +414,15 @@ autocompeter==1.2.3  \\
             'platform': 'amd64',
             'format': 'exe',
         })
+        url = 'https://pypi.python.org/packages/d5/0d/445186a82bbcc75166a507eff586df683c73641e7d6bb7424a44426dca71/Django-1.8.12-py2.py3-none-any.whl'
+        self.assertEqual(hashin.release_url_metadata(url), {
+            'package': 'Django',
+            'version': '1.8.12',
+            'python_version': 'py2.py3',
+            'abi': 'none',
+            'platform': 'any',
+            'format': 'whl',
+        })
 
     def test_expand_python_version(self):
         self.assertEqual(sorted(hashin.expand_python_version('2.7')),

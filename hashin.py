@@ -173,8 +173,7 @@ def expand_python_version(version):
 # This should match the naming convention laid out in PEP 0427
 # url = 'https://pypi.python.org/packages/3.4/P/Pygments/Pygments-2.1-py3-none-any.whl'
 CLASSIFY_WHEEL_RE = re.compile('''
-    ^https://pypi.python.org/packages/[^/]+/[^/]/[^/]+/
-    (?P<package>.+)-
+    ^(?P<package>.+)-
     (?P<version>\d[^-]*)-
     (?P<python_version>[^-]+)-
     (?P<abi>[^-]+)-
@@ -185,8 +184,7 @@ CLASSIFY_WHEEL_RE = re.compile('''
 ''', re.VERBOSE)
 
 CLASSIFY_EGG_RE = re.compile('''
-    ^https://pypi.python.org/packages/[^/]+/[^/]/[^/]+/
-    (?P<package>.+)-
+    ^(?P<package>.+)-
     (?P<version>\d[^-]*)-
     (?P<python_version>[^-]+)
     (-(?P<platform>[^\.]+))?
@@ -196,8 +194,7 @@ CLASSIFY_EGG_RE = re.compile('''
 ''', re.VERBOSE)
 
 CLASSIFY_ARCHIVE_RE = re.compile('''
-    ^https://pypi.python.org/packages/[^/]+/[^/]/[^/]+/
-    (?P<package>.+)-
+    ^(?P<package>.+)-
     (?P<version>\d[^-]*)
     .(?P<format>tar.(gz|bz2)|zip)
     (\#md5=.*)?
@@ -205,8 +202,7 @@ CLASSIFY_ARCHIVE_RE = re.compile('''
 ''', re.VERBOSE)
 
 CLASSIFY_EXE_RE = re.compile('''
-    ^https://pypi.python.org/packages/[^/]+/[^/]/[^/]+/
-    (?P<package>.+)-
+    ^(?P<package>.+)-
     (?P<version>\d[^-]*)-
     ((?P<platform>[^-]*)-)?
     (?P<python_version>[^-]+)
@@ -217,6 +213,7 @@ CLASSIFY_EXE_RE = re.compile('''
 
 
 def release_url_metadata(url):
+    filename = url.split('/')[-1]
     defaults = {
         'package': None,
         'version': None,
@@ -227,12 +224,12 @@ def release_url_metadata(url):
     }
     simple_classifiers = [CLASSIFY_WHEEL_RE, CLASSIFY_EGG_RE, CLASSIFY_EXE_RE]
     for classifier in simple_classifiers:
-        match = classifier.match(url)
+        match = classifier.match(filename)
         if match:
             defaults.update(match.groupdict())
             return defaults
 
-    match = CLASSIFY_ARCHIVE_RE.match(url)
+    match = CLASSIFY_ARCHIVE_RE.match(filename)
     if match:
         defaults.update(match.groupdict())
         defaults['python_version'] = 'source'
