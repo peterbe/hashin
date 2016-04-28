@@ -148,6 +148,9 @@ Version History
 ===============
 
 0.4.1
+  * Support for PyPI links that have a hash in the file URL.
+
+0.4.1
   * Fix PackageError if no Python version is defined.
 
 0.4
