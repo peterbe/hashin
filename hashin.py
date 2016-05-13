@@ -4,6 +4,7 @@ See README :)
 """
 
 from __future__ import print_function
+import argparse
 import cgi
 import tempfile
 import os
@@ -30,6 +31,33 @@ else:
             "Consider upgrading your version of Python."
         )
 
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    'packages',
+    help="One or more package specifiers (e.g. some-package or some-package==1.2.3)",
+    nargs='+'
+)
+parser.add_argument(
+    '-r', '--requirements-file',
+    help="requirements file to write to (default requirements.txt)",
+    default='requirements.txt'
+)
+parser.add_argument(
+    '-a', '--algorithm',
+    help="The hash algorithm to use: one of sha256, sha384, sha512",
+    default='sha256'
+)
+parser.add_argument(
+    '-v', '--verbose',
+    help="Verbose output",
+    action="store_true",
+)
+parser.add_argument(
+    '-p', '--python-version',
+    help='Python version to add wheels for. May be used multiple times.',
+    action='append',
+    default=[],
+)
 
 major_pip_version = int(pip.__version__.split('.')[0])
 if major_pip_version < 8:
@@ -292,35 +320,6 @@ def add_hashes(releases, algorithm, verbose=False):
 
 
 def main():
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        'packages',
-        help="One or more package specifiers (e.g. some-package or some-package==1.2.3)",
-        nargs='+'
-    )
-    parser.add_argument(
-        '-r', '--requirements-file',
-        help="requirements file to write to (default requirements.txt)",
-        default='requirements.txt'
-    )
-    parser.add_argument(
-        '-a', '--algorithm',
-        help="The hash algorithm to use: one of sha256, sha384, sha512",
-        default='sha256'
-    )
-    parser.add_argument(
-        '-v', '--verbose',
-        help="Verbose output",
-        action="store_true",
-    )
-    parser.add_argument(
-        '-p', '--python-version',
-        help='Python version to add wheels for. May be used multiple times.',
-        action='append',
-        default=[],
-    )
-
     args = parser.parse_args()
 
     return run(
