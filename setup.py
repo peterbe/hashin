@@ -22,7 +22,7 @@ if sys.version_info >= (2, 6) and sys.version_info <= (2, 7):
 
 setup(
     name='hashin',
-    version='0.4.2',
+    version='0.5.0',
     description='Edits your requirements.txt by hashing them in',
     long_description=open(path.join(_here, 'README.rst')).read(),
     author='Peter Bengtsson',
