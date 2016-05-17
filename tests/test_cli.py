@@ -188,6 +188,29 @@ autocompeter==1.2.3  \\
         )
         self.assertEqual(result, previous + new_lines)
 
+    def test_amend_requirements_content_new_similar_name(self):
+        """This test came from https://github.com/peterbe/hashin/issues/15"""
+        previous_1 = """
+pytest-selenium==1.2.1 \
+    --hash=sha256:e82f0a265b0e238ac42ac275d79313d0a7e0bef1a450633aeb3d6549cc14f517 \
+    --hash=sha256:bd2121022ff3255ce82faec0ef3602462ec6bce9ca627b53462986cfc9b391e9
+        """.strip() + '\n'
+        previous_2 = """
+selenium==2.52.0 \
+    --hash=sha256:820550a740ca1f746c399a0101986c0e6f94fbfe3c6f976e3f694db452cbe124
+        """.strip() + '\n'
+        new_lines = """
+selenium==2.53.1 \
+    --hash=sha256:b1af142650ed7025f906349ae0d7ed1f1a1e635e6ce7ac67e2b2f854f9f8fdc1 \
+    --hash=sha256:53929418a41295b526fbb68e43bc32fe93c3ef99c030b9e705caf1de486440de
+        """.strip()
+        result = hashin.amend_requirements_content(
+            previous_1 + previous_2, 'selenium', new_lines
+        )
+        self.assertTrue(previous_1 in result)
+        self.assertTrue(previous_2 not in result)
+        self.assertTrue(new_lines in result)
+
     @cleanup_tmpdir('hashin*')
     @mock.patch('hashin.urlopen')
     def test_run(self, murlopen):

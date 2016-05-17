@@ -120,7 +120,6 @@ def run(spec, file, algorithm, python_versions=None, verbose=False):
 
 
 def amend_requirements_content(requirements, package, new_lines):
-
     # if the package wasn't already there, add it to the bottom
     if '%s==' % package not in requirements:
         # easy peasy
@@ -132,7 +131,7 @@ def amend_requirements_content(requirements, package, new_lines):
         lines = []
         padding = ' ' * 4
         for line in requirements.splitlines():
-            if '{0}=='.format(package) in line:
+            if line.startswith('{0}=='.format(package)):
                 lines.append(line)
             elif lines and line.startswith(padding):
                 lines.append(line)
