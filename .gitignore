@@ -1,2 +1,3 @@
 .eggs/
 hashin.egg-info/
+.tox/
