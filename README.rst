@@ -77,13 +77,22 @@ Or you can be specific about exactly which version you want::
 
     hashin "futures==2.1.3"
 
+You can also specify more than one package at a time::
+
+    hashin "futures==2.1.3" requests
+
 Suppose you don't have a ``requirements.txt`` right there in the same
-directory you can do this::
+directory you can specify ``--requirements-file``::
 
-    hashin "futures==2.1.3" stuff/requirementst/prod.txt
+    hashin futures --requirements-file=stuff/requirements/prod.txt
 
-If there's not output. It worked. Check how it edited your
-requirements files.
+By default sha256 hashes are used, but this can be overriden using the
+``--algorithm`` argument::
+
+    hashin futures --algorithm=sha512
+
+If there's no output, it worked. Check how it edited your
+requirements file.
 
 Filtering releases by Python version
 ====================================
@@ -112,8 +121,8 @@ these exact identifiers directly, if you need something specific.
 The ``source`` release is always automatically included. ``pip`` will use
 this as a fallback in the case a suitable wheel cannot be found.
 
-Runnings tests
-==============
+Running tests
+=============
 
 Simply run::
 
