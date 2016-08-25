@@ -205,7 +205,7 @@ CLASSIFY_EXE_RE = re.compile('''
     (?P<version>\d[^-]*)-
     ((?P<platform>[^-]*)-)?
     (?P<python_version>[^-]+)
-    .(?P<format>exe)
+    .(?P<format>(exe|msi))
     (\#md5=.*)?
     $
 ''', re.VERBOSE)
