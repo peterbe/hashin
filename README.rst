@@ -147,6 +147,10 @@ put it directly into ``pip``.
 Version History
 ===============
 
+
+0.6.1
+  * Support windows binaries packaged as a ``.msi`` file.
+
 0.6.0
   * Fix compatibility issue with pip 8.1.2 and 8.1.1-2ubuntu0.1 and drop
     support for Python 2.6
@@ -154,7 +158,7 @@ Version History
 0.5.0
   * Important bug fix. As an example, if you had ``pytest-selenium==...``
     already in your ``requirements.txt`` file and add ``selenium==x.y.z``
-    it would touch the line with ``pytest-selenium`` too. 
+    it would touch the line with ``pytest-selenium`` too.
 
 0.4.1
   * Support for PyPI links that have a hash in the file URL.
