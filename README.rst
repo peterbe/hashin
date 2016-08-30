@@ -86,7 +86,7 @@ directory you can specify ``--requirements-file``::
 
     hashin futures --requirements-file=stuff/requirements/prod.txt
 
-By default sha256 hashes are used, but this can be overriden using the
+By default ``sha256`` hashes are used, but this can be overridden using the
 ``--algorithm`` argument::
 
     hashin futures --algorithm=sha512
@@ -156,6 +156,10 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.7.0
+  * The requirements file and algorithm arguments are now keyword
+    arguments. Now, the second, third, nth positional argument are
+    additional arguments. Thanks @https://github.com/ahal
 
 0.6.1
   * Support windows binaries packaged as a ``.msi`` file.
