@@ -55,7 +55,16 @@ def _download(url, binary=False):
     return r.read().decode(encoding)
 
 
-def run(spec, file, algorithm, python_versions=None, verbose=False):
+def run(specs, *args, **kwargs):
+    if isinstance(specs, str):
+        specs = [specs]
+
+    for spec in specs:
+        run_single_package(spec, *args, **kwargs)
+    return 0
+
+
+def run_single_package(spec, file, algorithm, python_versions=None, verbose=False):
     if '==' in spec:
         package, version = spec.split('==')
     else:
@@ -115,8 +124,6 @@ def run(spec, file, algorithm, python_versions=None, verbose=False):
     )
     with open(file, 'w') as f:
         f.write(requirements)
-
-    return 0
 
 
 def amend_requirements_content(requirements, package, new_lines):
@@ -284,36 +291,36 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        'package',
-        help="package (e.g. some-package==1.2.3 or just some-package)"
+        'packages',
+        help="One or more package specifiers (e.g. some-package or some-package==1.2.3)",
+        nargs='+'
     )
     parser.add_argument(
-        'requirements_file',
+        '-r', '--requirements-file',
         help="requirements file to write to (default requirements.txt)",
-        default='requirements.txt', nargs='?'
+        default='requirements.txt'
     )
     parser.add_argument(
-        'algorithm',
+        '-a', '--algorithm',
         help="The hash algorithm to use: one of sha256, sha384, sha512",
-        default='sha256', nargs='?'
+        default='sha256'
     )
     parser.add_argument(
-        "-v, --verbose",
+        '-v', '--verbose',
         help="Verbose output",
         action="store_true",
-        dest='verbose',
     )
     parser.add_argument(
-        '-p, --python-version',
+        '-p', '--python-version',
         help='Python version to add wheels for. May be used multiple times.',
         action='append',
         default=[],
-        dest='python_version',
     )
 
     args = parser.parse_args()
+
     return run(
-        args.package,
+        args.packages,
         args.requirements_file,
         args.algorithm,
         args.python_version,
