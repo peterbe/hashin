@@ -156,6 +156,9 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.7.1
+  * Package matching is now case insensitive. E.g. ``hashin dJaNgO``
+
 0.7.0
   * The requirements file and algorithm arguments are now keyword
     arguments. Now, the second, third, nth positional argument are
