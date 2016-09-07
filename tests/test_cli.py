@@ -220,6 +220,7 @@ selenium==2.53.1 \
                 return _Response({
                     'info': {
                         'version': '0.10',
+                        'name': 'hashin',
                     },
                     'releases': {
                         '0.10': [
@@ -336,6 +337,86 @@ selenium==2.53.1 \
                 '    --hash=sha512:c32e6d9fb09dc36ab9222c4606a1f43a2dcc183a8'
                 'c64bdd9199421ef779072c174fa044b155babb12860cf000e36bc4d3586'
                 '94fa22420c997b1dd75b623d4daa'
+            )
+
+    @cleanup_tmpdir('hashin*')
+    @mock.patch('hashin.urlopen')
+    def test_run_case_insensitive(self, murlopen):
+        """No matter how you run the cli with a package's case typing,
+        it should find it and correct the cast typing per what it is
+        inside the PyPI data."""
+
+        def mocked_get(url, **options):
+            if url == "https://pypi.python.org/pypi/HAShin/json":
+                return _Response({
+                    'info': {
+                        'version': '0.10',
+                        'name': 'hashin',
+                    },
+                    'releases': {
+                        '0.10': [
+                            {
+                                'url': 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                            }
+                        ]
+                    }
+                })
+            elif url == "https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz":
+                return _Response(b"Some tarball content\n")
+            elif url == "https://pypi.python.org/pypi/hashIN/json":
+                return _Response({
+                    'info': {
+                        'version': '0.11',
+                        'name': 'hashin',
+                    },
+                    'releases': {
+                        '0.11': [
+                            {
+                                'url': 'https://pypi.python.org/packages/source/p/hashin/hashin-0.11.tar.gz',
+                            }
+                        ]
+                    }
+                })
+            elif url == "https://pypi.python.org/packages/source/p/hashin/hashin-0.11.tar.gz":
+                return _Response(b"Some different tarball content\n")
+
+            raise NotImplementedError(url)
+
+        murlopen.side_effect = mocked_get
+
+        with tmpfile() as filename:
+            with open(filename, 'w') as f:
+                f.write('')
+
+            my_stdout = StringIO()
+            with redirect_stdout(my_stdout):
+                retcode = hashin.run(
+                    'HAShin==0.10',
+                    filename,
+                    'sha256',
+                    verbose=True
+                )
+
+            self.assertEqual(retcode, 0)
+            with open(filename) as f:
+                output = f.read()
+            assert output.endswith('\n')
+            lines = output.splitlines()
+            self.assertEqual(
+                lines[0],
+                'hashin==0.10 \\'
+            )
+
+            # Change version
+            retcode = hashin.run('hashIN==0.11', filename, 'sha256')
+            self.assertEqual(retcode, 0)
+            with open(filename) as f:
+                output = f.read()
+            assert output.endswith('\n')
+            lines = output.splitlines()
+            self.assertEqual(
+                lines[0],
+                'hashin==0.11 \\'
             )
 
     def test_filter_releases(self):

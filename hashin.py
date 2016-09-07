@@ -79,6 +79,10 @@ def run_single_package(spec, file, algorithm, python_versions=None, verbose=Fals
         if verbose:
             _verbose("Latest version for", version)
 
+    # Independent of how you like to case type it, pick the correct
+    # name from the PyPI index.
+    package = data['info']['name']
+
     try:
         releases = data['releases'][version]
     except KeyError:
@@ -128,7 +132,7 @@ def run_single_package(spec, file, algorithm, python_versions=None, verbose=Fals
 
 def amend_requirements_content(requirements, package, new_lines):
     # if the package wasn't already there, add it to the bottom
-    if '%s==' % package not in requirements:
+    if '%s==' % package.lower() not in requirements.lower():
         # easy peasy
         if requirements:
             requirements = requirements.strip() + '\n'
@@ -138,7 +142,7 @@ def amend_requirements_content(requirements, package, new_lines):
         lines = []
         padding = ' ' * 4
         for line in requirements.splitlines():
-            if line.startswith('{0}=='.format(package)):
+            if line.lower().startswith('{0}=='.format(package.lower())):
                 lines.append(line)
             elif lines and line.startswith(padding):
                 lines.append(line)
