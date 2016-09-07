@@ -1,3 +1,9 @@
 .eggs/
 hashin.egg-info/
 .tox/
+
+### Python ###
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
