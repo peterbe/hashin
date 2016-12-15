@@ -527,6 +527,16 @@ selenium==2.53.1 \
             'platform': 'any',
             'format': 'whl',
         })
+        # issue 32
+        url = 'https://pypi.python.org/packages/a4/ae/65500d0becffe3dd6671fbdc6010cc0c4a8b715dbd94315ba109bbc54bc5/turbine-0.0.3.linux-x86_64.tar.gz'
+        self.assertEqual(hashin.release_url_metadata(url), {
+            'package': 'turbine',
+            'version': '0.0.3.linux',
+            'python_version': 'source',
+            'abi': None,
+            'platform': 'x86_64',
+            'format': 'tar.gz',
+        })
 
     def test_expand_python_version(self):
         self.assertEqual(sorted(hashin.expand_python_version('2.7')),
