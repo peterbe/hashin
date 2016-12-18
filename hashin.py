@@ -234,6 +234,7 @@ CLASSIFY_EGG_RE = re.compile('''
 CLASSIFY_ARCHIVE_RE = re.compile('''
     ^(?P<package>.+)-
     (?P<version>\d[^-]*)
+    (-(?P<platform>[^\.]+))?
     .(?P<format>tar.(gz|bz2)|zip)
     (\#md5=.*)?
     $
