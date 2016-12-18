@@ -156,6 +156,10 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.7.2
+  * Fixes bug related to installing platform specific archives
+    See https://github.com/peterbe/hashin/pull/33 Thanks @mythmon
+
 0.7.1
   * Package matching is now case insensitive. E.g. ``hashin dJaNgO``
 
