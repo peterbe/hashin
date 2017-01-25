@@ -112,7 +112,7 @@ def run_single_package(spec, file, algorithm, python_versions=None, verbose=Fals
     package = data["package"]
 
     new_lines = ''
-    new_lines = '{0}=={1} \\\n'.format(package, version)
+    new_lines = '{0}=={1} \\\n'.format(package, data['version'])
     padding = ' ' * 4
     for i, release in enumerate(data["hashes"]):
         new_lines += (
