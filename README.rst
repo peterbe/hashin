@@ -156,6 +156,9 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.8.0
+  * Ability to make ``hashin`` work as a library. Thanks @jayfk !
+  
 0.7.2
   * Fixes bug related to installing platform specific archives
     See https://github.com/peterbe/hashin/pull/33 Thanks @mythmon
