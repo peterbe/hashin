@@ -139,7 +139,7 @@ This will print out::
     'package': 'Django',
     'version': '1.11b1'}
 
-Or with specific version, algorithm and certain Python versions:
+Or with specific version, algorithm and certain Python versions::
 
     import hashin
     from pprint import pprint
