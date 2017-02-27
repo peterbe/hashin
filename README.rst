@@ -121,6 +121,35 @@ these exact identifiers directly, if you need something specific.
 The ``source`` release is always automatically included. ``pip`` will use
 this as a fallback in the case a suitable wheel cannot be found.
 
+
+Using as a Python library
+=========================
+
+Everything you can do with ``hashin`` on the command line you can do
+in running Python too. For example::
+
+    import hashin
+    from pprint import pprint
+    pprint(hashin.get_package_hashes('Django'))
+
+This will print out::
+
+    {'hashes': [{'hash': 'fbc7ffaa45a4a67cb45f77dbd94e8eceecebe1d0959fe9c665dfbf28b41899e6',
+             'url': 'https://pypi.python.org/packages/41/c1/68dd27946b03a3d756b0ff665baad25aee1f59918891d86ab76764209208/Django-1.11b1-py2.py3-none-any.whl'}],
+    'package': 'Django',
+    'version': '1.11b1'}
+
+Or with specific version, algorithm and certain Python versions:
+
+    import hashin
+    from pprint import pprint
+    pprint(hashin.get_package_hashes(
+        'Django',
+        version='1.10',
+        algorithm='sha512',
+        python_versions=('3.5',)
+    ))
+
 Running tests
 =============
 
@@ -160,7 +189,7 @@ Version History
   * Ability to make ``hashin`` work as a library. Thanks @jayfk !
 
   * pep8 cleanups.
-  
+
 0.7.2
   * Fixes bug related to installing platform specific archives
     See https://github.com/peterbe/hashin/pull/33 Thanks @mythmon
