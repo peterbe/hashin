@@ -158,6 +158,8 @@ Version History
 
 0.8.0
   * Ability to make ``hashin`` work as a library. Thanks @jayfk !
+
+  * pep8 cleanups.
   
 0.7.2
   * Fixes bug related to installing platform specific archives

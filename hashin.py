@@ -49,7 +49,7 @@ parser.add_argument(
 )
 parser.add_argument(
     '-a', '--algorithm',
-    help="The hash algorithm to use: one of sha256, sha384, sha512",
+    help='The hash algorithm to use: one of sha256, sha384, sha512',
     default=DEFAULT_ALGORITHM
 )
 parser.add_argument(
@@ -118,17 +118,17 @@ def run_single_package(
         python_versions=python_versions,
         algorithm=algorithm
     )
-    package = data["package"]
+    package = data['package']
 
     new_lines = ''
     new_lines = '{0}=={1} \\\n'.format(package, data['version'])
     padding = ' ' * 4
-    for i, release in enumerate(data["hashes"]):
+    for i, release in enumerate(data['hashes']):
         new_lines += (
             '{0}--hash={1}:{2}'
             .format(padding, algorithm, release['hash'])
         )
-        if i != len(data["hashes"]) - 1:
+        if i != len(data['hashes']) - 1:
             new_lines += ' \\'
         new_lines += '\n'
 
@@ -308,23 +308,28 @@ def get_releases_hashes(releases, algorithm, verbose=False):
             _verbose('  Re-using', filename)
         found['hash'] = pip.commands.hash._hash_of_file(filename, algorithm)
         if verbose:
-            _verbose("  Hash", found['hash'])
+            _verbose('  Hash', found['hash'])
         yield {
-            "url": url,
-            "hash": found["hash"]
+            'url': url,
+            'hash': found['hash']
         }
 
 
-def get_package_hashes(package, version=None, algorithm=DEFAULT_ALGORITHM, python_versions=(),
-                       verbose=False):
+def get_package_hashes(
+    package,
+    version=None,
+    algorithm=DEFAULT_ALGORITHM,
+    python_versions=(),
+    verbose=False,
+):
     """
     Gets the hashes for the given package.
 
     >>> get_package_hashes('hashin')
     {
-        "package": "hashin",
-        "version": "0.10",
-        "hashes": [
+        'package': 'hashin',
+        'version': '0.10',
+        'hashes': [
             {
                 'url': 'https://pypi.python.org/packages/[...]',
                 'hash': '45d1c5d2237a3b4f78b4198709fb2ecf[...]'
@@ -345,7 +350,7 @@ def get_package_hashes(package, version=None, algorithm=DEFAULT_ALGORITHM, pytho
         version = get_latest_version(data)
         assert version
         if verbose:
-            _verbose("Latest version for", version)
+            _verbose('Latest version for', version)
 
     # Independent of how you like to case type it, pick the correct
     # name from the PyPI index.
@@ -362,17 +367,20 @@ def get_package_hashes(package, version=None, algorithm=DEFAULT_ALGORITHM, pytho
     if not releases:
         if python_versions:
             raise PackageError(
-                "No releases could be found for {0} matching Python versions {1}"
-                .format(version, python_versions)
+                'No releases could be found for '
+                '{0} matching Python versions {1}'.format(
+                    version,
+                    python_versions
+                )
             )
         else:
             raise PackageError(
-                "No releases could be found for {0}".format(version, python_versions)
+                'No releases could be found for {0}'.format(version)
             )
     return {
-        "package": package,
-        "version": version,
-        "hashes": list(get_releases_hashes(
+        'package': package,
+        'version': version,
+        'hashes': list(get_releases_hashes(
             releases=releases,
             algorithm=algorithm,
             verbose=verbose
