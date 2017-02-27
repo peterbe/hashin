@@ -543,3 +543,66 @@ selenium==2.53.1 \
                          ['2.7', 'cp27', 'py2', 'py2.7', 'py2.py3', 'source'])
         self.assertEqual(sorted(hashin.expand_python_version('3.5')),
                          ['3.5', 'cp35', 'py2.py3', 'py3', 'py3.5', 'source'])
+
+    @cleanup_tmpdir('hashin*')
+    @mock.patch('hashin.urlopen')
+    def test_as_library(self, murlopen):
+
+        def mocked_get(url, **options):
+            if url == "https://pypi.python.org/pypi/hashin/json":
+                return _Response({
+                    'info': {
+                        'version': '0.10',
+                        'name': 'hashin',
+                    },
+                    'releases': {
+                        '0.10': [
+                            {
+                                'url': 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                            },
+                            {
+                                'url': 'https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                            },
+                            {
+                                'url': 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                            }
+                        ]
+                    }
+                })
+            elif url == "https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl":
+                return _Response(b"Some py2 wheel content\n")
+            elif url == "https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl":
+                return _Response(b"Some py3 wheel content\n")
+            elif url == "https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz":
+                return _Response(b"Some tarball content\n")
+
+            raise NotImplementedError(url)
+
+        murlopen.side_effect = mocked_get
+
+        result = hashin.get_package_hashes(
+            package="hashin",
+            version="0.10",
+            algorithm="sha512",
+        )
+
+        expected = {
+            "package": "hashin",
+            "version": "0.10",
+            "hashes": [
+                {
+                    'url': 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                    'hash': '45d1c5d2237a3b4f78b4198709fb2ecf1f781c8234ce3d94356f2100a36739433952c6c13b2843952f608949e6baa9f95055a314487cd8fb3f9d76522d8edb50'
+                },
+                {
+                    'url': 'https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                    'hash': '0d63bf4c115154781846ecf573049324f06b021a1d4b92da4fae2bf491da2b83a13096b14d73e73cefad36855f4fa936bac4b2357dabf05a2b1e7329ff1e5455'
+                },
+                {
+                    'url': 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                    'hash': 'c32e6d9fb09dc36ab9222c4606a1f43a2dcc183a8c64bdd9199421ef779072c174fa044b155babb12860cf000e36bc4d358694fa22420c997b1dd75b623d4daa'
+                }
+            ]
+        }
+
+        self.assertEqual(result, expected)

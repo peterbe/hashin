@@ -31,6 +31,8 @@ else:
             "Consider upgrading your version of Python."
         )
 
+DEFAULT_ALGORITHM = 'sha256'
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'packages',
@@ -45,7 +47,7 @@ parser.add_argument(
 parser.add_argument(
     '-a', '--algorithm',
     help="The hash algorithm to use: one of sha256, sha384, sha512",
-    default='sha256'
+    default=DEFAULT_ALGORITHM
 )
 parser.add_argument(
     '-v', '--verbose',
@@ -100,48 +102,24 @@ def run_single_package(spec, file, algorithm, python_versions=None, verbose=Fals
         package, version = spec, None
         # then the latest version is in the breadcrumb
 
-    data = get_package_data(package, verbose)
-    if not version:
-        version = get_latest_version(data)
-        assert version
-        if verbose:
-            _verbose("Latest version for", version)
-
-    # Independent of how you like to case type it, pick the correct
-    # name from the PyPI index.
-    package = data['info']['name']
-
-    try:
-        releases = data['releases'][version]
-    except KeyError:
-        raise PackageError('No data found for version {0}'.format(version))
-
-    if python_versions:
-        releases = filter_releases(releases, python_versions)
-
-    if not releases:
-        if python_versions:
-            raise PackageError(
-                "No releases could be found for {0} matching Python versions {1}"
-                .format(spec, python_versions)
-            )
-        else:
-            raise PackageError(
-                "No releases could be found for {0}"
-                .format(spec, python_versions)
-            )
-
-    add_hashes(releases, algorithm, verbose=verbose)
+    data = get_package_hashes(
+        package=package,
+        version=version,
+        verbose=verbose,
+        python_versions=python_versions,
+        algorithm=algorithm
+    )
+    package = data["package"]
 
     new_lines = ''
-    new_lines = '{0}=={1} \\\n'.format(package, version)
+    new_lines = '{0}=={1} \\\n'.format(package, data['version'])
     padding = ' ' * 4
-    for i, release in enumerate(releases):
+    for i, release in enumerate(data["hashes"]):
         new_lines += (
             '{0}--hash={1}:{2}'
-            .format(padding, algorithm, release['hash'], release['url'])
+            .format(padding, algorithm, release['hash'])
         )
-        if i != len(releases) - 1:
+        if i != len(data["hashes"]) - 1:
             new_lines += ' \\'
         new_lines += '\n'
 
@@ -298,7 +276,7 @@ def get_package_data(package, verbose=False):
     return content
 
 
-def add_hashes(releases, algorithm, verbose=False):
+def get_releases_hashes(releases, algorithm, verbose=False):
     for found in releases:
         url = found['url']
         if verbose:
@@ -318,6 +296,75 @@ def add_hashes(releases, algorithm, verbose=False):
         found['hash'] = pip.commands.hash._hash_of_file(filename, algorithm)
         if verbose:
             _verbose("  Hash", found['hash'])
+        yield {
+            "url": url,
+            "hash": found["hash"]
+        }
+
+
+def get_package_hashes(package, version=None, algorithm=DEFAULT_ALGORITHM, python_versions=(),
+                       verbose=False):
+    """
+    Gets the hashes for the given package.
+
+    >>> get_package_hashes('hashin')
+    {
+        "package": "hashin",
+        "version": "0.10",
+        "hashes": [
+            {
+                'url': 'https://pypi.python.org/packages/[...]',
+                'hash': '45d1c5d2237a3b4f78b4198709fb2ecf[...]'
+            },
+            {
+                'url': 'https://pypi.python.org/packages/[...]',
+                'hash': '0d63bf4c115154781846ecf573049324[...]'
+            },
+            {
+                'url': 'https://pypi.python.org/packages/[...]',
+                'hash': 'c32e6d9fb09dc36ab9222c4606a1f43a[...]'
+            }
+        ]
+    }
+    """
+    data = get_package_data(package, verbose)
+    if not version:
+        version = get_latest_version(data)
+        assert version
+        if verbose:
+            _verbose("Latest version for", version)
+
+    # Independent of how you like to case type it, pick the correct
+    # name from the PyPI index.
+    package = data['info']['name']
+
+    try:
+        releases = data['releases'][version]
+    except KeyError:
+        raise PackageError('No data found for version {0}'.format(version))
+
+    if python_versions:
+        releases = filter_releases(releases, python_versions)
+
+    if not releases:
+        if python_versions:
+            raise PackageError(
+                "No releases could be found for {0} matching Python versions {1}"
+                .format(version, python_versions)
+            )
+        else:
+            raise PackageError(
+                "No releases could be found for {0}".format(version, python_versions)
+            )
+    return {
+        "package": package,
+        "version": version,
+        "hashes": list(get_releases_hashes(
+            releases=releases,
+            algorithm=algorithm,
+            verbose=verbose
+        ))
+    }
 
 
 def main():
