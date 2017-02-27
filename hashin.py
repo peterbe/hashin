@@ -23,12 +23,12 @@ else:
     if sys.version_info < (2, 7, 9):
         import warnings
         warnings.warn(
-            "In Python 2.7.9, the built-in urllib.urlopen() got upgraded "
-            "so that it, by default, does HTTPS certificate verification. "
-            "All prior versions do not. That means you run the risk of "
-            "downloading from a server that claims (man-in-the-middle "
-            "attack) to be https://pypi.python.org but actually is not. "
-            "Consider upgrading your version of Python."
+            'In Python 2.7.9, the built-in urllib.urlopen() got upgraded '
+            'so that it, by default, does HTTPS certificate verification. '
+            'All prior versions do not. That means you run the risk of '
+            'downloading from a server that claims (man-in-the-middle '
+            'attack) to be https://pypi.python.org but actually is not. '
+            'Consider upgrading your version of Python.'
         )
 
 DEFAULT_ALGORITHM = 'sha256'
@@ -36,23 +36,26 @@ DEFAULT_ALGORITHM = 'sha256'
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'packages',
-    help="One or more package specifiers (e.g. some-package or some-package==1.2.3)",
+    help=(
+        'One or more package specifiers (e.g. some-package or '
+        'some-package==1.2.3)'
+    ),
     nargs='+'
 )
 parser.add_argument(
     '-r', '--requirements-file',
-    help="requirements file to write to (default requirements.txt)",
+    help='requirements file to write to (default requirements.txt)',
     default='requirements.txt'
 )
 parser.add_argument(
     '-a', '--algorithm',
-    help="The hash algorithm to use: one of sha256, sha384, sha512",
+    help='The hash algorithm to use: one of sha256, sha384, sha512',
     default=DEFAULT_ALGORITHM
 )
 parser.add_argument(
     '-v', '--verbose',
-    help="Verbose output",
-    action="store_true",
+    help='Verbose output',
+    action='store_true',
 )
 parser.add_argument(
     '-p', '--python-version',
@@ -64,7 +67,7 @@ parser.add_argument(
 major_pip_version = int(pip.__version__.split('.')[0])
 if major_pip_version < 8:
     raise ImportError(
-        "hashin only works with pip 8.x or greater"
+        'hashin only works with pip 8.x or greater'
     )
 
 
@@ -94,7 +97,13 @@ def run(specs, *args, **kwargs):
     return 0
 
 
-def run_single_package(spec, file, algorithm, python_versions=None, verbose=False):
+def run_single_package(
+    spec,
+    file,
+    algorithm,
+    python_versions=None,
+    verbose=False,
+):
     if '==' in spec:
         package, version = spec.split('==')
     else:
@@ -109,22 +118,22 @@ def run_single_package(spec, file, algorithm, python_versions=None, verbose=Fals
         python_versions=python_versions,
         algorithm=algorithm
     )
-    package = data["package"]
+    package = data['package']
 
     new_lines = ''
     new_lines = '{0}=={1} \\\n'.format(package, data['version'])
     padding = ' ' * 4
-    for i, release in enumerate(data["hashes"]):
+    for i, release in enumerate(data['hashes']):
         new_lines += (
             '{0}--hash={1}:{2}'
             .format(padding, algorithm, release['hash'])
         )
-        if i != len(data["hashes"]) - 1:
+        if i != len(data['hashes']) - 1:
             new_lines += ' \\'
         new_lines += '\n'
 
     if verbose:
-        _verbose("Editing", file)
+        _verbose('Editing', file)
     with open(file) as f:
         requirements = f.read()
     requirements = amend_requirements_content(
@@ -183,11 +192,13 @@ def expand_python_version(version):
         'source',
         'py2.py3',
     ]
-    return set(pattern.format(major=major, minor=minor) for pattern in patterns)
+    return set(
+        pattern.format(major=major, minor=minor) for pattern in patterns
+    )
 
 
 # This should match the naming convention laid out in PEP 0427
-# url = 'https://pypi.python.org/packages/3.4/P/Pygments/Pygments-2.1-py3-none-any.whl'
+# url = 'https://pypi.python.org/packages/3.4/P/Pygments/Pygments-2.1-py3-none-any.whl' # NOQA
 CLASSIFY_WHEEL_RE = re.compile('''
     ^(?P<package>.+)-
     (?P<version>\d[^-]*)-
@@ -256,7 +267,9 @@ def release_url_metadata(url):
 
 
 def filter_releases(releases, python_versions):
-    python_versions = list(chain.from_iterable(expand_python_version(v) for v in python_versions))
+    python_versions = list(
+        chain.from_iterable(expand_python_version(v) for v in python_versions)
+    )
     filtered = []
     for release in releases:
         metadata = release_url_metadata(release['url'])
@@ -280,7 +293,7 @@ def get_releases_hashes(releases, algorithm, verbose=False):
     for found in releases:
         url = found['url']
         if verbose:
-            _verbose("Found URL", url)
+            _verbose('Found URL', url)
         download_dir = tempfile.gettempdir()
         filename = os.path.join(
             download_dir,
@@ -288,30 +301,35 @@ def get_releases_hashes(releases, algorithm, verbose=False):
         )
         if not os.path.isfile(filename):
             if verbose:
-                _verbose("  Downloaded to", filename)
+                _verbose('  Downloaded to', filename)
             with open(filename, 'wb') as f:
                 f.write(_download(url, binary=True))
         elif verbose:
-            _verbose("  Re-using", filename)
+            _verbose('  Re-using', filename)
         found['hash'] = pip.commands.hash._hash_of_file(filename, algorithm)
         if verbose:
-            _verbose("  Hash", found['hash'])
+            _verbose('  Hash', found['hash'])
         yield {
-            "url": url,
-            "hash": found["hash"]
+            'url': url,
+            'hash': found['hash']
         }
 
 
-def get_package_hashes(package, version=None, algorithm=DEFAULT_ALGORITHM, python_versions=(),
-                       verbose=False):
+def get_package_hashes(
+    package,
+    version=None,
+    algorithm=DEFAULT_ALGORITHM,
+    python_versions=(),
+    verbose=False,
+):
     """
     Gets the hashes for the given package.
 
     >>> get_package_hashes('hashin')
     {
-        "package": "hashin",
-        "version": "0.10",
-        "hashes": [
+        'package': 'hashin',
+        'version': '0.10',
+        'hashes': [
             {
                 'url': 'https://pypi.python.org/packages/[...]',
                 'hash': '45d1c5d2237a3b4f78b4198709fb2ecf[...]'
@@ -332,7 +350,7 @@ def get_package_hashes(package, version=None, algorithm=DEFAULT_ALGORITHM, pytho
         version = get_latest_version(data)
         assert version
         if verbose:
-            _verbose("Latest version for", version)
+            _verbose('Latest version for', version)
 
     # Independent of how you like to case type it, pick the correct
     # name from the PyPI index.
@@ -349,17 +367,20 @@ def get_package_hashes(package, version=None, algorithm=DEFAULT_ALGORITHM, pytho
     if not releases:
         if python_versions:
             raise PackageError(
-                "No releases could be found for {0} matching Python versions {1}"
-                .format(version, python_versions)
+                'No releases could be found for '
+                '{0} matching Python versions {1}'.format(
+                    version,
+                    python_versions
+                )
             )
         else:
             raise PackageError(
-                "No releases could be found for {0}".format(version, python_versions)
+                'No releases could be found for {0}'.format(version)
             )
     return {
-        "package": package,
-        "version": version,
-        "hashes": list(get_releases_hashes(
+        'package': package,
+        'version': version,
+        'hashes': list(get_releases_hashes(
             releases=releases,
             algorithm=algorithm,
             verbose=verbose
