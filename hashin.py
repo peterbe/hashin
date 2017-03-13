@@ -147,7 +147,8 @@ def run_single_package(
 
 def amend_requirements_content(requirements, package, new_lines):
     # if the package wasn't already there, add it to the bottom
-    if '%s==' % package.lower() not in requirements.lower():
+    regex = '(^|\n|\n\r){0}=='.format(re.escape(package))
+    if not re.search(regex, requirements, re.IGNORECASE):
         # easy peasy
         if requirements:
             requirements = requirements.strip() + '\n'

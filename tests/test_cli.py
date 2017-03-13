@@ -341,6 +341,95 @@ selenium==2.53.1 \
 
     @cleanup_tmpdir('hashin*')
     @mock.patch('hashin.urlopen')
+    def test_run_contained_names(self, murlopen):
+        """
+        This is based on https://github.com/peterbe/hashin/issues/35
+        which was a real bug discovered in hashin 0.8.0.
+        It happens because the second package's name is entirely contained
+        in the first package's name.
+        """
+
+        def mocked_get(url, **options):
+            if url == "https://pypi.python.org/pypi/django-redis/json":
+                return _Response({
+                    'info': {
+                        'version': '4.7.0',
+                        'name': 'django-redis',
+                    },
+                    'releases': {
+                        '4.7.0': [
+                            {
+                                'url': 'https://pypi.python.org/packages/source/p/django-redis/django-redis-4.7.0.tar.gz',
+                            }
+                        ]
+                    }
+                })
+            elif url == "https://pypi.python.org/packages/source/p/django-redis/django-redis-4.7.0.tar.gz":
+                return _Response(b"Some tarball content\n")
+            elif url == "https://pypi.python.org/pypi/redis/json":
+                return _Response({
+                    'info': {
+                        'version': '2.10.5',
+                        'name': 'redis',
+                    },
+                    'releases': {
+                        '2.10.5': [
+                            {
+                                'url': 'https://pypi.python.org/packages/source/p/redis/redis-2.10.5.tar.gz',
+                            }
+                        ]
+                    }
+                })
+            elif url == "https://pypi.python.org/packages/source/p/redis/redis-2.10.5.tar.gz":
+                return _Response(b"Some other tarball content\n")
+
+            raise NotImplementedError(url)
+
+        murlopen.side_effect = mocked_get
+
+        with tmpfile() as filename:
+            with open(filename, 'w') as f:
+                f.write('')
+
+            my_stdout = StringIO()
+            with redirect_stdout(my_stdout):
+                retcode = hashin.run(
+                    'django-redis==4.7.0',
+                    filename,
+                    'sha256',
+                    verbose=True
+                )
+
+            self.assertEqual(retcode, 0)
+            with open(filename) as f:
+                output = f.read()
+            assert output.endswith('\n')
+            lines = output.splitlines()
+            self.assertTrue('django-redis==4.7.0 \\' in lines)
+            self.assertEqual(len(lines), 2)
+
+            # Now install the next package whose name is contained
+            # in the first one.
+            my_stdout = StringIO()
+            with redirect_stdout(my_stdout):
+                retcode = hashin.run(
+                    'redis==2.10.5',
+                    filename,
+                    'sha256',
+                    verbose=True
+                )
+
+            self.assertEqual(retcode, 0)
+            with open(filename) as f:
+                output = f.read()
+            assert output.endswith('\n')
+            lines = output.splitlines()
+            self.assertTrue('django-redis==4.7.0 \\' in lines)
+            self.assertTrue('redis==2.10.5 \\' in lines)
+            self.assertEqual(len(lines), 4)
+
+    @cleanup_tmpdir('hashin*')
+    @mock.patch('hashin.urlopen')
     def test_run_case_insensitive(self, murlopen):
         """No matter how you run the cli with a package's case typing,
         it should find it and correct the cast typing per what it is
