@@ -185,6 +185,12 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.9.0
+  * Fixed a bug where it would fail to install a package whose name is
+    partially part of an existing (installed) package.
+    E.g. installing ``redis==x.y.z`` when ``django-redis==a.b.c`` was
+    already in the requirements file.
+
 0.8.0
   * Ability to make ``hashin`` work as a library. Thanks @jayfk !
 
