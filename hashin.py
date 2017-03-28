@@ -14,6 +14,7 @@ import json
 from itertools import chain
 
 import pip
+from pip._vendor.distlib.version import NormalizedVersion
 
 if sys.version_info >= (3,):
     from urllib.request import urlopen
@@ -171,7 +172,28 @@ def amend_requirements_content(requirements, package, new_lines):
 
 
 def get_latest_version(data):
-    return data['info']['version']
+    """
+    Return the version string of what we think is the latest version.
+    In the data blob from PyPI there is the info->version key which
+    is just the latest in time. Ideally we want the latest non-pre-release.
+    """
+    if not data.get('releases'):
+        # If there were no releases, fall back to the old way of doing
+        # things with the info->version key.
+        # This feels kinda strange but it has worked for years
+        return data['info']['version']
+    all_versions = []
+    for version in data['releases']:
+        v = NormalizedVersion(version)
+        if not v.is_prerelease:
+            # Remember, the normalized (i.e. parsed) version
+            # and the original version string as it's called in the
+            # data blob. We do this so we can sort all versions.
+            all_versions.append((v, version))
+    all_versions.sort(reverse=True)
+    # Return the original version string of the highest version
+    # number when normalized.
+    return all_versions[0][1]
 
 
 def expand_python_version(version):
