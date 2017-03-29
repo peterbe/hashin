@@ -14,7 +14,7 @@ import json
 from itertools import chain
 
 import pip
-from pip._vendor.distlib.version import NormalizedVersion
+from pip._vendor.packaging.version import parse
 
 if sys.version_info >= (3,):
     from urllib.request import urlopen
@@ -184,16 +184,12 @@ def get_latest_version(data):
         return data['info']['version']
     all_versions = []
     for version in data['releases']:
-        v = NormalizedVersion(version)
+        v = parse(version)
         if not v.is_prerelease:
-            # Remember, the normalized (i.e. parsed) version
-            # and the original version string as it's called in the
-            # data blob. We do this so we can sort all versions.
-            all_versions.append((v, version))
+            all_versions.append(v)
     all_versions.sort(reverse=True)
-    # Return the original version string of the highest version
-    # number when normalized.
-    return all_versions[0][1]
+    # return the highest non-pre-release version
+    return str(all_versions[0])
 
 
 def expand_python_version(version):
