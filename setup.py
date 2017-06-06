@@ -7,13 +7,13 @@ _here = path.dirname(__file__)
 # http://www.eby-sarna.com/pipermail/peak/2010-May/003357.html:
 try:
     import multiprocessing
-    multiprocessing = multiprocessing  # shut up pyflakes
+    multiprocessing = multiprocessing  # take it easy pyflakes
 except ImportError:
     pass
 
 setup(
     name='hashin',
-    version='0.9.0',
+    version='0.10.0',
     description='Edits your requirements.txt by hashing them in',
     long_description=open(path.join(_here, 'README.rst')).read(),
     author='Peter Bengtsson',

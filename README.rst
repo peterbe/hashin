@@ -185,6 +185,11 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.10.0
+  * Latest version is now figured out by looking at all version numbers
+    in the list of releases from the JSON payload. The pre releases are
+    skipped.
+
 0.9.0
   * Fixed a bug where it would fail to install a package whose name is
     partially part of an existing (installed) package.
