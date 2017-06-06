@@ -135,8 +135,11 @@ def run_single_package(
 
     if verbose:
         _verbose('Editing', file)
-    with open(file) as f:
-        requirements = f.read()
+    try:
+        with open(file) as f:
+            requirements = f.read()
+    except FileNotFoundError:
+        requirements = ''
     requirements = amend_requirements_content(
         requirements,
         package,
