@@ -185,6 +185,11 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.11.0
+  * Cope with leading zeros in version numbers when figuring out what
+    the latest version is.
+    See https://github.com/peterbe/hashin/issues/39
+
 0.10.0
   * Latest version is now figured out by looking at all version numbers
     in the list of releases from the JSON payload. The pre releases are
