@@ -19,6 +19,7 @@ def test_everything():
         python_version=['3.5'],
         requirements_file='reqs.txt',
         verbose=True,
+        version=False,
     )
     eq_(args, (expected, []))
 
@@ -37,6 +38,7 @@ def test_everything_long():
         python_version=['3.5'],
         requirements_file='reqs.txt',
         verbose=True,
+        version=False,
     )
     eq_(args, (expected, []))
 
@@ -49,5 +51,6 @@ def test_minimal():
         python_version=[],
         requirements_file='requirements.txt',
         verbose=False,
+        version=False,
     )
     eq_(args, (expected, []))

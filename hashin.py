@@ -64,6 +64,13 @@ parser.add_argument(
     action='append',
     default=[],
 )
+parser.add_argument(
+    '--version',
+    help='Version of hashin',
+    action='store_true',
+    default=False,
+)
+
 
 major_pip_version = int(pip.__version__.split('.')[0])
 if major_pip_version < 8:
@@ -408,6 +415,13 @@ def get_package_hashes(
 
 
 def main():
+    if '--version' in sys.argv[1:]:
+        # Can't be part of argparse because the 'packages' is mandatory
+        # print out the version of self
+        import pkg_resources
+        print(pkg_resources.get_distribution('hashin').version)
+        return 0
+
     args = parser.parse_args()
 
     return run(
