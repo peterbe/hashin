@@ -1,6 +1,6 @@
 sudo: false
 language: python
-python: 3.6
+python: 3.5
 env:
   - TOX_ENV=py26
   - TOX_ENV=py27
@@ -12,7 +12,7 @@ env:
 branches:
   only:
   - master
-before_install: travis_retry pip install twine "pip>=8.0" tox-travis
+before_install: travis_retry pip install twine "pip>=8.0" tox
 script: tox -e $TOX_ENV
 deploy:
   provider: pypi
