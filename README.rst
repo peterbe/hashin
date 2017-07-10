@@ -185,6 +185,11 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.11.1
+  * Ability to run ``hashin --version`` to see what version of hashin is
+    installed.
+    See https://github.com/peterbe/hashin/issues/41
+
 0.11.0
   * Cope with leading zeros in version numbers when figuring out what
     the latest version is.
