@@ -185,6 +185,9 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.11.2
+  * Run continuous integration tests with Python 3.6 too.
+
 0.11.1
   * Ability to run ``hashin --version`` to see what version of hashin is
     installed.
