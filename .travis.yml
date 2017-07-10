@@ -1,6 +1,6 @@
 sudo: false
 language: python
-python: 3.5
+python: 3.6
 env:
   - TOX_ENV=py26
   - TOX_ENV=py27
