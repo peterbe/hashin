@@ -1,6 +1,12 @@
 sudo: false
 language: python
 python: 3.6
+addons:
+  apt:
+    sources:
+      - deadsnakes
+    packages:
+      - python3.5
 env:
   - TOX_ENV=py26
   - TOX_ENV=py27
