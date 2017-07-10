@@ -92,6 +92,20 @@ class Tests(TestCase):
         self.assertEqual(version, '0.999')
 
     @mock.patch('hashin.urlopen')
+    def test_get_latest_version_non_pre_release_leading_zeros(self, murlopen):
+        version = hashin.get_latest_version({
+            'info': {
+                'version': '0.3',
+            },
+            'releases': {
+                '0.04.13': {},
+                '0.04.21': {},
+                '0.04.09': {},
+            }
+        })
+        self.assertEqual(version, '0.04.21')
+
+    @mock.patch('hashin.urlopen')
     def test_get_hashes_error(self, murlopen):
 
         def mocked_get(url, **options):

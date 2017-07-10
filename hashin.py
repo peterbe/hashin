@@ -186,10 +186,10 @@ def get_latest_version(data):
     for version in data['releases']:
         v = parse(version)
         if not v.is_prerelease:
-            all_versions.append(v)
+            all_versions.append((v, version))
     all_versions.sort(reverse=True)
     # return the highest non-pre-release version
-    return str(all_versions[0])
+    return str(all_versions[0][1])
 
 
 def expand_python_version(version):
