@@ -642,6 +642,113 @@ selenium==2.53.1 \
                 'hashin==0.11 \\'
             )
 
+    @cleanup_tmpdir('hashin*')
+    @mock.patch('hashin.urlopen')
+    def test_run_pep_0496(self, murlopen):
+        """
+        Properly pass through specifiers which look like:
+
+           enum==1.1.6; python_version <= '3.4'
+
+        These can include many things besides python_version; see
+        https://www.python.org/dev/peps/pep-0496/
+        """
+
+        def mocked_get(url, **options):
+            if url == "https://pypi.python.org/pypi/enum34/json":
+                return _Response({
+                    'info': {
+                        'version': '1.1.6',
+                        'name': 'enum34',
+                    },
+                    'releases': {
+                        "1.1.6": [
+
+                            {
+                                "has_sig": False,
+                                "upload_time": "2016-05-16T03:31:13",
+                                "comment_text": "",
+                                "python_version": "py2",
+                                "url": "https://pypi.python.org/packages/c5/db/enum34-1.1.6-py2-none-any.whl",
+                                "md5_digest": "68f6982cc07dde78f4b500db829860bd",
+                                "downloads": 4297423,
+                                "filename": "enum34-1.1.6-py2-none-any.whl",
+                                "packagetype": "bdist_wheel",
+                                "path": "c5/db/enum34-1.1.6-py2-none-any.whl",
+                                "size": 12427
+                            },
+                            {
+                                "has_sig": False,
+                                "upload_time": "2016-05-16T03:31:19",
+                                "comment_text": "",
+                                "python_version": "py3",
+                                "url": "https://pypi.python.org/packages/af/42/enum34-1.1.6-py3-none-any.whl",
+                                "md5_digest": "a63ecb4f0b1b85fb69be64bdea999b43",
+                                "downloads": 98598,
+                                "filename": "enum34-1.1.6-py3-none-any.whl",
+                                "packagetype": "bdist_wheel",
+                                "path": "af/42/enum34-1.1.6-py3-none-any.whl",
+                                "size": 12428
+                            },
+                            {
+                                "has_sig": False,
+                                "upload_time": "2016-05-16T03:31:30",
+                                "comment_text": "",
+                                "python_version": "source",
+                                "url": "https://pypi.python.org/packages/bf/3e/enum34-1.1.6.tar.gz",
+                                "md5_digest": "5f13a0841a61f7fc295c514490d120d0",
+                                "downloads": 188090,
+                                "filename": "enum34-1.1.6.tar.gz",
+                                "packagetype": "sdist",
+                                "path": "bf/3e/enum34-1.1.6.tar.gz",
+                                "size": 40048
+                            },
+                            {
+                                "has_sig": False,
+                                "upload_time": "2016-05-16T03:31:48",
+                                "comment_text": "",
+                                "python_version": "source",
+                                "url": "https://pypi.python.org/packages/e8/26/enum34-1.1.6.zip",
+                                "md5_digest": "61ad7871532d4ce2d77fac2579237a9e",
+                                "downloads": 775920,
+                                "filename": "enum34-1.1.6.zip",
+                                "packagetype": "sdist",
+                                "path": "e8/26/enum34-1.1.6.zip",
+                                "size": 44773
+                            }
+                        ]
+                    }
+                })
+            elif url.startswith("https://pypi.python.org/packages"):
+                return _Response(b"Some tarball content\n")
+
+            raise NotImplementedError(url)
+
+        murlopen.side_effect = mocked_get
+
+        with tmpfile() as filename:
+            with open(filename, 'w') as f:
+                f.write('')
+
+            my_stdout = StringIO()
+            with redirect_stdout(my_stdout):
+                retcode = hashin.run(
+                    "enum34==1.1.6; python_version <= '3.4'",
+                    filename,
+                    'sha256',
+                    verbose=True
+                )
+
+            self.assertEqual(retcode, 0)
+            with open(filename) as f:
+                output = f.read()
+            assert output.endswith('\n')
+            lines = output.splitlines()
+            self.assertEqual(
+                lines[0],
+                "enum34==1.1.6; python_version <= '3.4' \\"
+            )
+
     def test_filter_releases(self):
         releases = [
             {

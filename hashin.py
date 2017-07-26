@@ -118,6 +118,9 @@ def run_single_package(
     python_versions=None,
     verbose=False,
 ):
+    restriction = None
+    if ';' in spec:
+        spec, restriction = [x.strip() for x in spec.split(';', 1)]
     if '==' in spec:
         package, version = spec.split('==')
     else:
@@ -134,8 +137,9 @@ def run_single_package(
     )
     package = data['package']
 
+    maybe_restriction = '' if not restriction else ' ; {0}'.format(restriction)
     new_lines = ''
-    new_lines = '{0}=={1} \\\n'.format(package, data['version'])
+    new_lines = '{0}=={1}{2} \\\n'.format(package, data['version'], maybe_restriction)
     padding = ' ' * 4
     for i, release in enumerate(data['hashes']):
         new_lines += (
