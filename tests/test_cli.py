@@ -564,6 +564,11 @@ selenium==2.53.1 \
         filtered = hashin.filter_releases(releases, ['py3', 'source'])
         self.assertEqual(filtered, [releases[1], releases[2]])
 
+        # Missing versions skipped
+        filtered = hashin.filter_releases(releases, ['py2.9', 'source'])
+        self.assertEqual(filtered, [releases[2]])
+
+
     def test_release_url_metadata_python(self):
         url = 'https://pypi.python.org/packages/3.4/P/Pygments/Pygments-2.1-py3-none-any.whl'
         self.assertEqual(hashin.release_url_metadata(url), {
