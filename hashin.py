@@ -430,13 +430,17 @@ def main():
 
     args = parser.parse_args()
 
-    return run(
-        args.packages,
-        args.requirements_file,
-        args.algorithm,
-        args.python_version,
-        verbose=args.verbose,
-    )
+    try:
+        return run(
+            args.packages,
+            args.requirements_file,
+            args.algorithm,
+            args.python_version,
+            verbose=args.verbose,
+        )
+    except PackageError as exception:
+        print(str(exception), file=sys.stderr)
+        return 1
 
 
 if __name__ == '__main__':
