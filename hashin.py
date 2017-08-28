@@ -430,13 +430,19 @@ def main():
 
     args = parser.parse_args()
 
-    return run(
-        args.packages,
-        args.requirements_file,
-        args.algorithm,
-        args.python_version,
-        verbose=args.verbose,
-    )
+    try:
+        result = run(
+            args.packages,
+            args.requirements_file,
+            args.algorithm,
+            args.python_version,
+            verbose=args.verbose,
+        )
+    except PackageError as e:
+        # traceback isn't useful, but message is
+        print(str(e))
+        result = 1
+    return result
 
 
 if __name__ == '__main__':
