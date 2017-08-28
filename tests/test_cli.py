@@ -154,6 +154,19 @@ class Tests(TestCase):
         mock_sys.stderr.write.assert_any_call('Some message here')
         mock_sys.stderr.write.assert_any_call('\n')
 
+    @mock.patch('hashin.sys')
+    def test_main_version(self, mock_sys):
+        mock_sys.argv = [None, '--version']
+        my_stdout = StringIO()
+        with redirect_stdout(my_stdout):
+            error = hashin.main()
+        self.assertEqual(error, 0)
+        version = my_stdout.getvalue().strip()
+        import pkg_resources
+        current_version = pkg_resources.get_distribution('hashin').version
+        # No easy way to know what exact version it is
+        self.assertEqual(version, current_version)
+
     def test_amend_requirements_content_new(self):
         requirements = """
 # empty so far

@@ -158,6 +158,16 @@ Simply run::
     python setup.py test
 
 
+Running tests with test coverage
+================================
+
+To run the tests with test coverage, with ``nosetests`` run something like
+this::
+
+    nosetests --with-coverage --cover-package=hashin --cover-html
+    open cover/index.html
+
+
 Debugging
 =========
 
