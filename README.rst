@@ -185,8 +185,12 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.11.4
+  * PackageErrors happening in CLI suppressed just the error message out on
+    stderr. No full traceback any more.
+
 0.11.3
-  * Better error if you typo the package name since it'll 404 on pypi.
+  * Better error if you typo the package name since it'll 404 on PyPI.
 
 0.11.2
   * Run continuous integration tests with Python 3.6 too.
