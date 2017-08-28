@@ -142,6 +142,18 @@ class Tests(TestCase):
             'sha256'
         )
 
+    @mock.patch('hashin.parser')
+    @mock.patch('hashin.sys')
+    @mock.patch('hashin.run')
+    def test_main_packageerrors_stderr(self, mock_run, mock_sys, mock_parser):
+        # Doesn't matter so much what, just make sure it breaks
+        mock_run.side_effect = hashin.PackageError('Some message here')
+
+        error = hashin.main()
+        self.assertEqual(error, 1)
+        mock_sys.stderr.write.assert_any_call('Some message here')
+        mock_sys.stderr.write.assert_any_call('\n')
+
     def test_amend_requirements_content_new(self):
         requirements = """
 # empty so far
