@@ -123,7 +123,7 @@ def run_single_package(
     else:
         assert '>' not in spec and '<' not in spec
         package, version = spec, None
-        # then the latest version is in the breadcrumb
+        # There are other ways to what the latest version is.
 
     data = get_package_hashes(
         package=package,
@@ -382,7 +382,10 @@ def get_package_hashes(
         version = get_latest_version(data)
         assert version
         if verbose:
-            _verbose('Latest version for', version)
+            _verbose('Latest version for {0} is {1}'.format(
+                package,
+                version,
+            ))
 
     # Independent of how you like to case type it, pick the correct
     # name from the PyPI index.

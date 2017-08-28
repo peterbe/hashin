@@ -71,6 +71,10 @@ class _Response(object):
 
 class Tests(TestCase):
 
+    # For when you use nosetests
+    def shortDescription(self):
+        return None
+
     @mock.patch('hashin.urlopen')
     def test_get_latest_version_simple(self, murlopen):
         version = hashin.get_latest_version({'info': {'version': '0.3'}})
@@ -417,6 +421,60 @@ selenium==2.53.1 \
 
     @cleanup_tmpdir('hashin*')
     @mock.patch('hashin.urlopen')
+    def test_run_without_specific_version(self, murlopen):
+
+        def mocked_get(url, **options):
+            if url == 'https://pypi.python.org/pypi/hashin/json':
+                return _Response({
+                    'info': {
+                        'version': '0.10',
+                        'name': 'hashin',
+                    },
+                    'releases': {
+                        '0.10': [
+                            {
+                                'url': 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                            },
+                            {
+                                'url': 'https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                            },
+                            {
+                                'url': 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                            }
+                        ]
+                    }
+                })
+            elif url == 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl':
+                return _Response(b'Some py2 wheel content\n')
+            elif url == 'https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl':
+                return _Response(b'Some py3 wheel content\n')
+            elif url == 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz':
+                return _Response(b'Some tarball content\n')
+
+            raise NotImplementedError(url)
+
+        murlopen.side_effect = mocked_get
+
+        with tmpfile() as filename:
+            with open(filename, 'w') as f:
+                f.write('')
+
+            my_stdout = StringIO()
+            with redirect_stdout(my_stdout):
+                retcode = hashin.run(
+                    'hashin',
+                    filename,
+                    'sha256',
+                    verbose=True
+                )
+
+            self.assertEqual(retcode, 0)
+            with open(filename) as f:
+                output = f.read()
+            self.assertTrue(output.startswith('hashin==0.10'))
+
+    @cleanup_tmpdir('hashin*')
+    @mock.patch('hashin.urlopen')
     def test_run_contained_names(self, murlopen):
         """
         This is based on https://github.com/peterbe/hashin/issues/35
@@ -711,7 +769,7 @@ selenium==2.53.1 \
 
     @cleanup_tmpdir('hashin*')
     @mock.patch('hashin.urlopen')
-    def test_as_library(self, murlopen):
+    def test_get_package_hashes(self, murlopen):
 
         def mocked_get(url, **options):
             if url == "https://pypi.python.org/pypi/hashin/json":
@@ -746,15 +804,15 @@ selenium==2.53.1 \
         murlopen.side_effect = mocked_get
 
         result = hashin.get_package_hashes(
-            package="hashin",
-            version="0.10",
-            algorithm="sha512",
+            package='hashin',
+            version='0.10',
+            algorithm='sha512',
         )
 
         expected = {
-            "package": "hashin",
-            "version": "0.10",
-            "hashes": [
+            'package': 'hashin',
+            'version': '0.10',
+            'hashes': [
                 {
                     'url': 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
                     'hash': '45d1c5d2237a3b4f78b4198709fb2ecf1f781c8234ce3d94356f2100a36739433952c6c13b2843952f608949e6baa9f95055a314487cd8fb3f9d76522d8edb50'
@@ -771,3 +829,86 @@ selenium==2.53.1 \
         }
 
         self.assertEqual(result, expected)
+
+    @cleanup_tmpdir('hashin*')
+    @mock.patch('hashin.urlopen')
+    def test_get_package_hashes_without_version(self, murlopen):
+
+        def mocked_get(url, **options):
+            if url == 'https://pypi.python.org/pypi/hashin/json':
+                return _Response({
+                    'info': {
+                        'version': '0.10',
+                        'name': 'hashin',
+                    },
+                    'releases': {
+                        '0.10': [
+                            {
+                                'url': 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                            },
+                            {
+                                'url': 'https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                            },
+                            {
+                                'url': 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                            }
+                        ]
+                    }
+                })
+            elif url == 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl':
+                return _Response(b'Some py2 wheel content\n')
+            elif url == 'https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl':
+                return _Response(b'Some py3 wheel content\n')
+            elif url == 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz':
+                return _Response(b'Some tarball content\n')
+
+            elif url == 'https://pypi.python.org/pypi/uggamugga/json':
+                return _Response({
+                    'info': {
+                        'version': '1.2.3',
+                        'name': 'uggamugga',
+                    },
+                    'releases': {}  # Note!
+                })
+
+            raise NotImplementedError(url)
+
+        murlopen.side_effect = mocked_get
+
+        stdout_buffer = StringIO()
+        with redirect_stdout(stdout_buffer):
+            result = hashin.get_package_hashes(
+                package='hashin',
+                verbose=True,
+                # python_versions=('3.5',),
+            )
+        self.assertEqual(result['package'], 'hashin')
+        self.assertEqual(result['version'], '0.10')
+        self.assertTrue(result['hashes'])
+        stdout = stdout_buffer.getvalue()
+        self.assertTrue('Latest version for hashin is 0.10' in stdout)
+
+        # Let's do it again and mess with a few things.
+        # First specify python_versions.
+        stdout_buffer = StringIO()
+        with redirect_stdout(stdout_buffer):
+            result = hashin.get_package_hashes(
+                package='hashin',
+                verbose=True,
+                python_versions=('3.5',),
+            )
+        self.assertEqual(len(result['hashes']), 2)  # instead of 3
+        # Specify an unrecognized python version
+        self.assertRaises(
+            hashin.PackageError,
+            hashin.get_package_hashes,
+            package='hashin',
+            python_versions=('2.99999',),
+        )
+
+        # Look for a package without any releases
+        self.assertRaises(
+            hashin.PackageError,
+            hashin.get_package_hashes,
+            package='uggamugga',
+        )
