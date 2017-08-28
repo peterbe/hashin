@@ -185,6 +185,9 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.11.3
+  * Better error if you typo the package name since it'll 404 on pypi.
+
 0.11.2
   * Run continuous integration tests with Python 3.6 too.
 
