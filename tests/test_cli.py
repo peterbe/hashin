@@ -65,6 +65,9 @@ class _Response(object):
     def read(self):
         return self.content
 
+    def getcode(self):
+        return self.status_code
+
 
 class Tests(TestCase):
 
@@ -112,6 +115,22 @@ class Tests(TestCase):
             if url == "https://pypi.python.org/pypi/somepackage/json":
                 return _Response({})
             raise NotImplementedError(url)
+
+        murlopen.side_effect = mocked_get
+
+        self.assertRaises(
+            hashin.PackageError,
+            hashin.run,
+            'somepackage==1.2.3',
+            'doesntmatter.txt',
+            'sha256'
+        )
+
+    @mock.patch('hashin.urlopen')
+    def test_non_200_ok_download(self, murlopen):
+
+        def mocked_get(url, **options):
+            return _Response({}, status_code=403)
 
         murlopen.side_effect = mocked_get
 

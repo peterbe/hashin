@@ -89,6 +89,12 @@ def _verbose(*args):
 
 def _download(url, binary=False):
     r = urlopen(url)
+    # Note that urlopen will, by default, follow redirects.
+    if r.getcode() != 200:
+        raise PackageError('Package not found. {0} on {1}'.format(
+            r.getcode(),
+            url,
+        ))
     if binary:
         return r.read()
     _, params = cgi.parse_header(r.headers.get('Content-Type', ''))
