@@ -220,6 +220,11 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.11.5
+  * You can now pass PEP-0496 Environment Markers together with the package
+    name, and they get passed into the ``requirements.txt`` file.
+    Thanks @meejah 
+
 0.11.4
   * PackageErrors happening in CLI suppressed just the error message out on
     stderr. No full traceback any more.
