@@ -123,7 +123,7 @@ this as a fallback in the case a suitable wheel cannot be found.
 
 Requirements can use `PEP-0496`_ style specifiers (e.g. like
 ``cffi==1.5.2; python_version >= '3.4'``) and these will be passed
-through when re-writing the ``requirements.txt`` file. ``hashin`` don't
+through when re-writing the ``requirements.txt`` file. ``hashin`` doesn't
 parse the specifiers themselves and will take anything after the
 semicolon. If you are using ``python_version`` you will still need to
 pass appropriate options if you don't want every available hash.
