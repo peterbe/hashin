@@ -121,13 +121,14 @@ these exact identifiers directly, if you need something specific.
 The ``source`` release is always automatically included. ``pip`` will use
 this as a fallback in the case a suitable wheel cannot be found.
 
-Requirements can use PEP-0496 style specifiers (e.g. like
-``cffi==1.5.2 ; python_version >= '3.4'``) and these will be passed
-through when re-writing the requirements.txt file. ``hashin`` doen't
+Requirements can use `PEP-0496`_ style specifiers (e.g. like
+``cffi==1.5.2; python_version >= '3.4'``) and these will be passed
+through when re-writing the ``requirements.txt`` file. ``hashin`` don't
 parse the specifiers themselves and will take anything after the
 semicolon. If you are using ``python_version`` you will still need to
 pass appropriate options if you don't want every available hash.
 
+.. _`PEP-0496`: https://www.python.org/dev/peps/pep-0496/
 
 Using as a Python library
 =========================
