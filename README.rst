@@ -121,12 +121,29 @@ these exact identifiers directly, if you need something specific.
 The ``source`` release is always automatically included. ``pip`` will use
 this as a fallback in the case a suitable wheel cannot be found.
 
+PEP-0496 Environment Markers
+============================
+
 Requirements can use `PEP-0496`_ style specifiers (e.g. like
 ``cffi==1.5.2; python_version >= '3.4'``) and these will be passed
 through when re-writing the ``requirements.txt`` file. ``hashin`` doesn't
 parse the specifiers themselves and will take anything after the
 semicolon. If you are using ``python_version`` you will still need to
 pass appropriate options if you don't want every available hash.
+
+An example of this might be::
+
+    hashin "pywin32-ctypes ; sys_platform == 'win32'"
+
+which will result it something like this in the ``requirements.txt`` file::
+
+    pywin32-ctypes==0.1.2; sys_platform == 'win32' \
+        --hash=sha256:4820b830f42e6889d34142bcd07b3896018c3620d8c31f5e13b72caf1f4d1d0f
+
+And if you want to limit it to certain Python versions, here's an example::
+
+    hashin "cffi==1.5.2; python_version >= '3.4'" -p 3.4 -p 3.5
+
 
 .. _`PEP-0496`: https://www.python.org/dev/peps/pep-0496/
 
