@@ -137,9 +137,13 @@ def run_single_package(
     )
     package = data['package']
 
-    maybe_restriction = '' if not restriction else ' ; {0}'.format(restriction)
+    maybe_restriction = '' if not restriction else '; {0}'.format(restriction)
     new_lines = ''
-    new_lines = '{0}=={1}{2} \\\n'.format(package, data['version'], maybe_restriction)
+    new_lines = '{0}=={1}{2} \\\n'.format(
+        package,
+        data['version'],
+        maybe_restriction
+    )
     padding = ' ' * 4
     for i, release in enumerate(data['hashes']):
         new_lines += (
