@@ -116,7 +116,7 @@ class Tests(TestCase):
     def test_get_hashes_error(self, murlopen):
 
         def mocked_get(url, **options):
-            if url == "https://pypi.python.org/pypi/somepackage/json":
+            if url == "https://pypi.org/pypi/somepackage/json":
                 return _Response({})
             raise NotImplementedError(url)
 
@@ -296,7 +296,7 @@ selenium==2.53.1 \
     def test_run(self, murlopen):
 
         def mocked_get(url, **options):
-            if url == "https://pypi.python.org/pypi/hashin/json":
+            if url == "https://pypi.org/pypi/hashin/json":
                 return _Response({
                     'info': {
                         'version': '0.10',
@@ -305,22 +305,31 @@ selenium==2.53.1 \
                     'releases': {
                         '0.10': [
                             {
-                                'url': 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                                'url': 'https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                                'digests': {
+                                    'sha256': 'aaaaa',
+                                },
                             },
                             {
-                                'url': 'https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                                'url': 'https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                                'digests': {
+                                    'sha256': 'bbbbb',
+                                }
                             },
                             {
-                                'url': 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                                'url': 'https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                                'digests': {
+                                    'sha256': 'ccccc',
+                                }
                             }
                         ]
                     }
                 })
-            elif url == "https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl":
+            elif url == "https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl":
                 return _Response(b"Some py2 wheel content\n")
-            elif url == "https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl":
+            elif url == "https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl":
                 return _Response(b"Some py3 wheel content\n")
-            elif url == "https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz":
+            elif url == "https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz":
                 return _Response(b"Some tarball content\n")
 
             raise NotImplementedError(url)
@@ -352,24 +361,21 @@ selenium==2.53.1 \
             )
             self.assertEqual(
                 lines[1],
-                '    --hash=sha256:31104f8c0f9816a6d2135db4232cfa248b2c'
-                '7525596263216577d3cdc93a3c25 \\'
+                '    --hash=sha256:aaaaa \\'
             )
             self.assertEqual(
                 lines[2],
-                '    --hash=sha256:61fb59231ffe967ce693a2099cff59a2695e'
-                '6d02acbb6b051033e3b1107d8008 \\'
+                '    --hash=sha256:bbbbb \\'
             )
             self.assertEqual(
                 lines[3],
-                '    --hash=sha256:b2f06d3c4d148b648768abab5086afac0414'
-                'e49eb4813e1f3c450b975c77cee9'
+                '    --hash=sha256:ccccc'
             )
 
             # Now check the verbose output
             out_lines = my_stdout.getvalue().splitlines()
             self.assertTrue(
-                'https://pypi.python.org/pypi/hashin/json' in out_lines[0],
+                'https://pypi.org/pypi/hashin/json' in out_lines[0],
                 out_lines[0]
             )
             # url to download
@@ -377,16 +383,14 @@ selenium==2.53.1 \
                 'hashin-0.10-py2-none-any.whl' in out_lines[1],
                 out_lines[1]
             )
-            # file it got downloaded to
             self.assertTrue(
-                'hashin-0.10-py2-none-any.whl' in out_lines[2],
-                out_lines[2]
+                'Found URL https://pypi.org/packages' in out_lines[1],
+                out_lines[1]
             )
             # hash it got
             self.assertTrue(
-                '31104f8c0f9816a6d2135db4232cfa248b2c7525596263216577d3cdc'
-                '93a3c25' in out_lines[3],
-                out_lines[3]
+                'aaaaa' in out_lines[2],
+                out_lines[2]
             )
 
             # Change algorithm
@@ -402,15 +406,15 @@ selenium==2.53.1 \
             )
             self.assertEqual(
                 lines[1],
-                '    --hash=sha512:45d1c5d2237a3b4f78b4198709fb2ecf1f781c823'
-                '4ce3d94356f2100a36739433952c6c13b2843952f608949e6baa9f95055'
-                'a314487cd8fb3f9d76522d8edb50 \\'
-            )
-            self.assertEqual(
-                lines[2],
                 '    --hash=sha512:0d63bf4c115154781846ecf573049324f06b021a1'
                 'd4b92da4fae2bf491da2b83a13096b14d73e73cefad36855f4fa936bac4'
                 'b2357dabf05a2b1e7329ff1e5455 \\'
+            )
+            self.assertEqual(
+                lines[2],
+                '    --hash=sha512:45d1c5d2237a3b4f78b4198709fb2ecf1f781c823'
+                '4ce3d94356f2100a36739433952c6c13b2843952f608949e6baa9f95055'
+                'a314487cd8fb3f9d76522d8edb50 \\'
             )
             self.assertEqual(
                 lines[3],
@@ -424,7 +428,7 @@ selenium==2.53.1 \
     def test_run_without_specific_version(self, murlopen):
 
         def mocked_get(url, **options):
-            if url == 'https://pypi.python.org/pypi/hashin/json':
+            if url == 'https://pypi.org/pypi/hashin/json':
                 return _Response({
                     'info': {
                         'version': '0.10',
@@ -433,23 +437,26 @@ selenium==2.53.1 \
                     'releases': {
                         '0.10': [
                             {
-                                'url': 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                                'url': 'https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                                'digests': {
+                                    'sha256': 'aaaaa',
+                                },
                             },
                             {
-                                'url': 'https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                                'url': 'https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                                'digests': {
+                                    'sha256': 'bbbbb',
+                                },
                             },
                             {
-                                'url': 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                                'url': 'https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                                'digests': {
+                                    'sha256': 'ccccc',
+                                },
                             }
                         ]
                     }
                 })
-            elif url == 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl':
-                return _Response(b'Some py2 wheel content\n')
-            elif url == 'https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl':
-                return _Response(b'Some py3 wheel content\n')
-            elif url == 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz':
-                return _Response(b'Some tarball content\n')
 
             raise NotImplementedError(url)
 
@@ -459,6 +466,9 @@ selenium==2.53.1 \
             with open(filename, 'w') as f:
                 f.write('')
 
+            # XXX When we don't bother to read the stdout, perhaps let it
+            # just print. Test runners like pytest and nosetests are
+            # good at "ignoring" stdout output.
             my_stdout = StringIO()
             with redirect_stdout(my_stdout):
                 retcode = hashin.run(
@@ -484,7 +494,7 @@ selenium==2.53.1 \
         """
 
         def mocked_get(url, **options):
-            if url == "https://pypi.python.org/pypi/django-redis/json":
+            if url == "https://pypi.org/pypi/django-redis/json":
                 return _Response({
                     'info': {
                         'version': '4.7.0',
@@ -493,14 +503,17 @@ selenium==2.53.1 \
                     'releases': {
                         '4.7.0': [
                             {
-                                'url': 'https://pypi.python.org/packages/source/p/django-redis/django-redis-4.7.0.tar.gz',
+                                'url': 'https://pypi.org/packages/source/p/django-redis/django-redis-4.7.0.tar.gz',
+                                'digests': {
+                                    'sha256': 'aaaaa',
+                                },
                             }
                         ]
                     }
                 })
-            elif url == "https://pypi.python.org/packages/source/p/django-redis/django-redis-4.7.0.tar.gz":
+            elif url == "https://pypi.org/packages/source/p/django-redis/django-redis-4.7.0.tar.gz":
                 return _Response(b"Some tarball content\n")
-            elif url == "https://pypi.python.org/pypi/redis/json":
+            elif url == "https://pypi.org/pypi/redis/json":
                 return _Response({
                     'info': {
                         'version': '2.10.5',
@@ -509,13 +522,16 @@ selenium==2.53.1 \
                     'releases': {
                         '2.10.5': [
                             {
-                                'url': 'https://pypi.python.org/packages/source/p/redis/redis-2.10.5.tar.gz',
+                                'url': 'https://pypi.org/packages/source/p/redis/redis-2.10.5.tar.gz',
+                                'digests': {
+                                    'sha256': 'bbbbb',
+                                },
                             }
                         ]
                     }
                 })
-            elif url == "https://pypi.python.org/packages/source/p/redis/redis-2.10.5.tar.gz":
-                return _Response(b"Some other tarball content\n")
+            # elif url == "https://pypi.org/packages/source/p/redis/redis-2.10.5.tar.gz":
+            #     return _Response(b"Some other tarball content\n")
 
             raise NotImplementedError(url)
 
@@ -570,23 +586,15 @@ selenium==2.53.1 \
         inside the PyPI data."""
 
         def mocked_get(url, **options):
-            if url == "https://pypi.python.org/pypi/HAShin/json":
-                return _Response({
-                    'info': {
-                        'version': '0.10',
-                        'name': 'hashin',
-                    },
-                    'releases': {
-                        '0.10': [
-                            {
-                                'url': 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz',
-                            }
-                        ]
-                    }
+            if url == 'https://pypi.org/pypi/HAShin/json':
+                return _Response('', status_code=301, headers={
+                    'location': 'https://pypi.org/pypi/hashin/json'
                 })
-            elif url == "https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz":
-                return _Response(b"Some tarball content\n")
-            elif url == "https://pypi.python.org/pypi/hashIN/json":
+            elif url == "https://pypi.org/pypi/hashIN/json":
+                return _Response('', status_code=301, headers={
+                    'location': 'https://pypi.org/pypi/hashin/json'
+                })
+            elif url == 'https://pypi.org/pypi/hashin/json':
                 return _Response({
                     'info': {
                         'version': '0.11',
@@ -595,13 +603,26 @@ selenium==2.53.1 \
                     'releases': {
                         '0.11': [
                             {
-                                'url': 'https://pypi.python.org/packages/source/p/hashin/hashin-0.11.tar.gz',
+                                'url': 'https://pypi.org/packages/source/p/hashin/hashin-0.11.tar.gz',
+                                'digests': {
+                                    'sha256': 'bbbbb',
+                                },
+                            }
+                        ],
+                        '0.10': [
+                            {
+                                'url': 'https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                                'digests': {
+                                    'sha256': 'aaaaa',
+                                },
                             }
                         ]
                     }
                 })
-            elif url == "https://pypi.python.org/packages/source/p/hashin/hashin-0.11.tar.gz":
-                return _Response(b"Some different tarball content\n")
+            # elif url == "https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz":
+            #     return _Response(b"Some tarball content\n")
+            # elif url == "https://pypi.org/packages/source/p/hashin/hashin-0.11.tar.gz":
+            #     return _Response(b"Some different tarball content\n")
 
             raise NotImplementedError(url)
 
@@ -655,7 +676,7 @@ selenium==2.53.1 \
         """
 
         def mocked_get(url, **options):
-            if url == "https://pypi.python.org/pypi/enum34/json":
+            if url == "https://pypi.org/pypi/enum34/json":
                 return _Response({
                     'info': {
                         'version': '1.1.6',
@@ -669,7 +690,11 @@ selenium==2.53.1 \
                                 "upload_time": "2016-05-16T03:31:13",
                                 "comment_text": "",
                                 "python_version": "py2",
-                                "url": "https://pypi.python.org/packages/c5/db/enum34-1.1.6-py2-none-any.whl",
+                                "url": "https://pypi.org/packages/c5/db/enum34-1.1.6-py2-none-any.whl",
+                                "digests": {
+                                    "md5": "68f6982cc07dde78f4b500db829860bd",
+                                    "sha256": "aaaaa"
+                                },
                                 "md5_digest": "68f6982cc07dde78f4b500db829860bd",
                                 "downloads": 4297423,
                                 "filename": "enum34-1.1.6-py2-none-any.whl",
@@ -682,8 +707,12 @@ selenium==2.53.1 \
                                 "upload_time": "2016-05-16T03:31:19",
                                 "comment_text": "",
                                 "python_version": "py3",
-                                "url": "https://pypi.python.org/packages/af/42/enum34-1.1.6-py3-none-any.whl",
+                                "url": "https://pypi.org/packages/af/42/enum34-1.1.6-py3-none-any.whl",
                                 "md5_digest": "a63ecb4f0b1b85fb69be64bdea999b43",
+                                "digests": {
+                                    "md5": "a63ecb4f0b1b85fb69be64bdea999b43",
+                                    "sha256": "bbbbb"
+                                },
                                 "downloads": 98598,
                                 "filename": "enum34-1.1.6-py3-none-any.whl",
                                 "packagetype": "bdist_wheel",
@@ -695,8 +724,12 @@ selenium==2.53.1 \
                                 "upload_time": "2016-05-16T03:31:30",
                                 "comment_text": "",
                                 "python_version": "source",
-                                "url": "https://pypi.python.org/packages/bf/3e/enum34-1.1.6.tar.gz",
+                                "url": "https://pypi.org/packages/bf/3e/enum34-1.1.6.tar.gz",
                                 "md5_digest": "5f13a0841a61f7fc295c514490d120d0",
+                                "digests": {
+                                    "md5": "5f13a0841a61f7fc295c514490d120d0",
+                                    "sha256": "ccccc"
+                                },
                                 "downloads": 188090,
                                 "filename": "enum34-1.1.6.tar.gz",
                                 "packagetype": "sdist",
@@ -708,8 +741,12 @@ selenium==2.53.1 \
                                 "upload_time": "2016-05-16T03:31:48",
                                 "comment_text": "",
                                 "python_version": "source",
-                                "url": "https://pypi.python.org/packages/e8/26/enum34-1.1.6.zip",
+                                "url": "https://pypi.org/packages/e8/26/enum34-1.1.6.zip",
                                 "md5_digest": "61ad7871532d4ce2d77fac2579237a9e",
+                                "digests": {
+                                    "md5": "61ad7871532d4ce2d77fac2579237a9e",
+                                    "sha256": "dddddd"
+                                },
                                 "downloads": 775920,
                                 "filename": "enum34-1.1.6.zip",
                                 "packagetype": "sdist",
@@ -719,8 +756,8 @@ selenium==2.53.1 \
                         ]
                     }
                 })
-            elif url.startswith("https://pypi.python.org/packages"):
-                return _Response(b"Some tarball content\n")
+            # elif url.startswith("https://pypi.org/packages"):
+            #     return _Response(b"Some tarball content\n")
 
             raise NotImplementedError(url)
 
@@ -752,13 +789,13 @@ selenium==2.53.1 \
     def test_filter_releases(self):
         releases = [
             {
-                'url': 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                'url': 'https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
             },
             {
-                'url': 'https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                'url': 'https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
             },
             {
-                'url': 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                'url': 'https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz',
             },
         ]
 
@@ -774,7 +811,7 @@ selenium==2.53.1 \
         self.assertEqual(filtered, [releases[1], releases[2]])
 
     def test_release_url_metadata_python(self):
-        url = 'https://pypi.python.org/packages/3.4/P/Pygments/Pygments-2.1-py3-none-any.whl'
+        url = 'https://pypi.org/packages/3.4/P/Pygments/Pygments-2.1-py3-none-any.whl'
         self.assertEqual(hashin.release_url_metadata(url), {
             'package': 'Pygments',
             'version': '2.1',
@@ -783,7 +820,7 @@ selenium==2.53.1 \
             'platform': 'any',
             'format': 'whl',
         })
-        url = 'https://pypi.python.org/packages/2.7/J/Jinja2/Jinja2-2.8-py2.py3-none-any.whl'
+        url = 'https://pypi.org/packages/2.7/J/Jinja2/Jinja2-2.8-py2.py3-none-any.whl'
         self.assertEqual(hashin.release_url_metadata(url), {
             'package': 'Jinja2',
             'version': '2.8',
@@ -792,7 +829,7 @@ selenium==2.53.1 \
             'platform': 'any',
             'format': 'whl',
         })
-        url = 'https://pypi.python.org/packages/cp35/c/cffi/cffi-1.5.2-cp35-none-win32.whl'
+        url = 'https://pypi.org/packages/cp35/c/cffi/cffi-1.5.2-cp35-none-win32.whl'
         self.assertEqual(hashin.release_url_metadata(url), {
             'package': 'cffi',
             'version': '1.5.2',
@@ -801,7 +838,7 @@ selenium==2.53.1 \
             'platform': 'win32',
             'format': 'whl',
         })
-        url = ('https://pypi.python.org/packages/source/f/factory_boy/'
+        url = ('https://pypi.org/packages/source/f/factory_boy/'
                'factory_boy-2.6.0.tar.gz#md5=d61ee02c6ac8d992f228c0346bd52f32')
         self.assertEqual(hashin.release_url_metadata(url), {
             'package': 'factory_boy',
@@ -811,7 +848,7 @@ selenium==2.53.1 \
             'platform': None,
             'format': 'tar.gz',
         })
-        url = ('https://pypi.python.org/packages/source/d/django-reversion/'
+        url = ('https://pypi.org/packages/source/d/django-reversion/'
                'django-reversion-1.10.0.tar.gz')
         self.assertEqual(hashin.release_url_metadata(url), {
             'package': 'django-reversion',
@@ -821,7 +858,7 @@ selenium==2.53.1 \
             'platform': None,
             'format': 'tar.gz',
         })
-        url = 'https://pypi.python.org/packages/2.6/g/greenlet/greenlet-0.4.9-py2.6-win-amd64.egg'
+        url = 'https://pypi.org/packages/2.6/g/greenlet/greenlet-0.4.9-py2.6-win-amd64.egg'
         self.assertEqual(hashin.release_url_metadata(url), {
             'package': 'greenlet',
             'version': '0.4.9',
@@ -830,7 +867,7 @@ selenium==2.53.1 \
             'platform': 'win-amd64',
             'format': 'egg',
         })
-        url = 'https://pypi.python.org/packages/2.4/p/pytz/pytz-2015.7-py2.4.egg'
+        url = 'https://pypi.org/packages/2.4/p/pytz/pytz-2015.7-py2.4.egg'
         self.assertEqual(hashin.release_url_metadata(url), {
             'package': 'pytz',
             'version': '2015.7',
@@ -839,7 +876,7 @@ selenium==2.53.1 \
             'platform': None,
             'format': 'egg',
         })
-        url = 'https://pypi.python.org/packages/2.7/g/gevent/gevent-1.1.0.win-amd64-py2.7.exe'
+        url = 'https://pypi.org/packages/2.7/g/gevent/gevent-1.1.0.win-amd64-py2.7.exe'
         self.assertEqual(hashin.release_url_metadata(url), {
             'package': 'gevent',
             'version': '1.1.0.win',
@@ -848,7 +885,7 @@ selenium==2.53.1 \
             'platform': 'amd64',
             'format': 'exe',
         })
-        url = 'https://pypi.python.org/packages/d5/0d/445186a82bbcc75166a507eff586df683c73641e7d6bb7424a44426dca71/Django-1.8.12-py2.py3-none-any.whl'
+        url = 'https://pypi.org/packages/d5/0d/445186a82bbcc75166a507eff586df683c73641e7d6bb7424a44426dca71/Django-1.8.12-py2.py3-none-any.whl'
         self.assertEqual(hashin.release_url_metadata(url), {
             'package': 'Django',
             'version': '1.8.12',
@@ -858,7 +895,7 @@ selenium==2.53.1 \
             'format': 'whl',
         })
         # issue 32
-        url = 'https://pypi.python.org/packages/a4/ae/65500d0becffe3dd6671fbdc6010cc0c4a8b715dbd94315ba109bbc54bc5/turbine-0.0.3.linux-x86_64.tar.gz'
+        url = 'https://pypi.org/packages/a4/ae/65500d0becffe3dd6671fbdc6010cc0c4a8b715dbd94315ba109bbc54bc5/turbine-0.0.3.linux-x86_64.tar.gz'
         self.assertEqual(hashin.release_url_metadata(url), {
             'package': 'turbine',
             'version': '0.0.3.linux',
@@ -879,7 +916,7 @@ selenium==2.53.1 \
     def test_get_package_hashes(self, murlopen):
 
         def mocked_get(url, **options):
-            if url == "https://pypi.python.org/pypi/hashin/json":
+            if url == "https://pypi.org/pypi/hashin/json":
                 return _Response({
                     'info': {
                         'version': '0.10',
@@ -888,22 +925,97 @@ selenium==2.53.1 \
                     'releases': {
                         '0.10': [
                             {
-                                'url': 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                                'url': 'https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                                'digests': {
+                                    'sha256': 'aaaaa',
+                                }
                             },
                             {
-                                'url': 'https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                                'url': 'https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                                'digests': {
+                                    'sha256': 'bbbbb',
+                                }
                             },
                             {
-                                'url': 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                                'url': 'https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                                'digests': {
+                                    'sha256': 'ccccc',
+                                }
                             }
                         ]
                     }
                 })
-            elif url == "https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl":
+
+            raise NotImplementedError(url)
+
+        murlopen.side_effect = mocked_get
+
+        result = hashin.get_package_hashes(
+            package='hashin',
+            version='0.10',
+            algorithm='sha256',
+        )
+
+        expected = {
+            'package': 'hashin',
+            'version': '0.10',
+            'hashes': [
+                {
+                    'url': 'https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                    'hash': 'aaaaa'
+                },
+                {
+                    'url': 'https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                    'hash': 'bbbbb'
+                },
+                {
+                    'url': 'https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                    'hash': 'ccccc'
+                }
+            ]
+        }
+
+        self.assertEqual(result, expected)
+
+    @cleanup_tmpdir('hashin*')
+    @mock.patch('hashin.urlopen')
+    def test_get_package_hashes_unknown_algorithm(self, murlopen):
+
+        def mocked_get(url, **options):
+            if url == "https://pypi.org/pypi/hashin/json":
+                return _Response({
+                    'info': {
+                        'version': '0.10',
+                        'name': 'hashin',
+                    },
+                    'releases': {
+                        '0.10': [
+                            {
+                                'url': 'https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                                'digests': {
+                                    'sha256': 'aaaaa',
+                                }
+                            },
+                            {
+                                'url': 'https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                                'digests': {
+                                    'sha256': 'bbbbb',
+                                }
+                            },
+                            {
+                                'url': 'https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                                'digests': {
+                                    'sha256': 'ccccc',
+                                }
+                            }
+                        ]
+                    }
+                })
+            elif url == "https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl":
                 return _Response(b"Some py2 wheel content\n")
-            elif url == "https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl":
+            elif url == "https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl":
                 return _Response(b"Some py3 wheel content\n")
-            elif url == "https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz":
+            elif url == "https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz":
                 return _Response(b"Some tarball content\n")
 
             raise NotImplementedError(url)
@@ -921,15 +1033,15 @@ selenium==2.53.1 \
             'version': '0.10',
             'hashes': [
                 {
-                    'url': 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
-                    'hash': '45d1c5d2237a3b4f78b4198709fb2ecf1f781c8234ce3d94356f2100a36739433952c6c13b2843952f608949e6baa9f95055a314487cd8fb3f9d76522d8edb50'
-                },
-                {
-                    'url': 'https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                    'url': 'https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
                     'hash': '0d63bf4c115154781846ecf573049324f06b021a1d4b92da4fae2bf491da2b83a13096b14d73e73cefad36855f4fa936bac4b2357dabf05a2b1e7329ff1e5455'
                 },
                 {
-                    'url': 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                    'url': 'https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                    'hash': '45d1c5d2237a3b4f78b4198709fb2ecf1f781c8234ce3d94356f2100a36739433952c6c13b2843952f608949e6baa9f95055a314487cd8fb3f9d76522d8edb50'
+                },
+                {
+                    'url': 'https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz',
                     'hash': 'c32e6d9fb09dc36ab9222c4606a1f43a2dcc183a8c64bdd9199421ef779072c174fa044b155babb12860cf000e36bc4d358694fa22420c997b1dd75b623d4daa'
                 }
             ]
@@ -942,7 +1054,7 @@ selenium==2.53.1 \
     def test_get_package_hashes_without_version(self, murlopen):
 
         def mocked_get(url, **options):
-            if url == 'https://pypi.python.org/pypi/hashin/json':
+            if url == 'https://pypi.org/pypi/hashin/json':
                 return _Response({
                     'info': {
                         'version': '0.10',
@@ -951,25 +1063,34 @@ selenium==2.53.1 \
                     'releases': {
                         '0.10': [
                             {
-                                'url': 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                                'url': 'https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
+                                'digests': {
+                                    'sha256': 'aaaaa',
+                                }
                             },
                             {
-                                'url': 'https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                                'url': 'https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
+                                'digests': {
+                                    'sha256': 'bbbbb',
+                                }
                             },
                             {
-                                'url': 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                                'url': 'https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                                'digests': {
+                                    'sha256': 'ccccc',
+                                }
                             }
                         ]
                     }
                 })
-            elif url == 'https://pypi.python.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl':
-                return _Response(b'Some py2 wheel content\n')
-            elif url == 'https://pypi.python.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl':
-                return _Response(b'Some py3 wheel content\n')
-            elif url == 'https://pypi.python.org/packages/source/p/hashin/hashin-0.10.tar.gz':
-                return _Response(b'Some tarball content\n')
+            # elif url == 'https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl':
+            #     return _Response(b'Some py2 wheel content\n')
+            # elif url == 'https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl':
+            #     return _Response(b'Some py3 wheel content\n')
+            # elif url == 'https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz':
+            #     return _Response(b'Some tarball content\n')
 
-            elif url == 'https://pypi.python.org/pypi/uggamugga/json':
+            elif url == 'https://pypi.org/pypi/uggamugga/json':
                 return _Response({
                     'info': {
                         'version': '1.2.3',
@@ -987,7 +1108,6 @@ selenium==2.53.1 \
             result = hashin.get_package_hashes(
                 package='hashin',
                 verbose=True,
-                # python_versions=('3.5',),
             )
         self.assertEqual(result['package'], 'hashin')
         self.assertEqual(result['version'], '0.10')

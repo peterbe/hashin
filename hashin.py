@@ -90,9 +90,19 @@ def _verbose(*args):
 def _download(url, binary=False):
     r = urlopen(url)
     # Note that urlopen will, by default, follow redirects.
-    if r.getcode() != 200:
+    status_code = r.getcode()
+
+    if status_code >= 301 and status_code < 400:
+        location, _ = cgi.parse_header(r.headers.get('location', ''))
+        if not location:
+            raise PackageError("No 'Location' header on {0} ({1})".format(
+                url,
+                status_code,
+            ))
+        return _download(location)
+    elif status_code != 200:
         raise PackageError('Package not found. {0} on {1}'.format(
-            r.getcode(),
+            status_code,
             url,
         ))
     if binary:
@@ -319,7 +329,7 @@ def filter_releases(releases, python_versions):
 
 
 def get_package_data(package, verbose=False):
-    url = 'https://pypi.python.org/pypi/%s/json' % package
+    url = 'https://pypi.org/pypi/%s/json' % package
     if verbose:
         print(url)
     content = json.loads(_download(url))
@@ -334,19 +344,26 @@ def get_releases_hashes(releases, algorithm, verbose=False):
         url = found['url']
         if verbose:
             _verbose('Found URL', url)
-        download_dir = tempfile.gettempdir()
-        filename = os.path.join(
-            download_dir,
-            os.path.basename(url.split('#')[0])
-        )
-        if not os.path.isfile(filename):
-            if verbose:
-                _verbose('  Downloaded to', filename)
-            with open(filename, 'wb') as f:
-                f.write(_download(url, binary=True))
-        elif verbose:
-            _verbose('  Re-using', filename)
-        found['hash'] = pip.commands.hash._hash_of_file(filename, algorithm)
+        digests = found['digests']
+        try:
+            found['hash'] = digests[algorithm]
+        except KeyError:
+            # The algorithm is NOT in the 'digests' dict.
+            # We have to download the file and use pip
+            download_dir = tempfile.gettempdir()
+            filename = os.path.join(
+                download_dir,
+                os.path.basename(url.split('#')[0])
+            )
+            if not os.path.isfile(filename):
+                if verbose:
+                    _verbose('  Downloaded to', filename)
+                with open(filename, 'wb') as f:
+                    f.write(_download(url, binary=True))
+            elif verbose:
+                _verbose('  Re-using', filename)
+
+            found['hash'] = pip.commands.hash._hash_of_file(filename, algorithm)
         if verbose:
             _verbose('  Hash', found['hash'])
         yield {
@@ -371,15 +388,15 @@ def get_package_hashes(
         'version': '0.10',
         'hashes': [
             {
-                'url': 'https://pypi.python.org/packages/[...]',
+                'url': 'https://pypi.org/packages/[...]',
                 'hash': '45d1c5d2237a3b4f78b4198709fb2ecf[...]'
             },
             {
-                'url': 'https://pypi.python.org/packages/[...]',
+                'url': 'https://pypi.org/packages/[...]',
                 'hash': '0d63bf4c115154781846ecf573049324[...]'
             },
             {
-                'url': 'https://pypi.python.org/packages/[...]',
+                'url': 'https://pypi.org/packages/[...]',
                 'hash': 'c32e6d9fb09dc36ab9222c4606a1f43a[...]'
             }
         ]
@@ -420,14 +437,21 @@ def get_package_hashes(
             raise PackageError(
                 'No releases could be found for {0}'.format(version)
             )
-    return {
-        'package': package,
-        'version': version,
-        'hashes': list(get_releases_hashes(
+
+    # Sorting them helps make sure the results are more predictable
+    # when running more than once for the same version
+    hashes = sorted(
+        get_releases_hashes(
             releases=releases,
             algorithm=algorithm,
             verbose=verbose
-        ))
+        ),
+        key=lambda x: x['hash']
+    )
+    return {
+        'package': package,
+        'version': version,
+        'hashes': hashes,
     }
 
 
