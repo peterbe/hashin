@@ -220,10 +220,18 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.12.0
+  * Switch from ``pypi.python.org/pypi/<package>/json`` to
+    ``pypi.org/pypi/<package>/json`` which also means the sha256 hash is part
+    of the JSON payload immediately instead of having to download and run
+    ``pip`` to get the hash.
+
+  * Testing no runs Python 2.6 and Python 3.3.
+
 0.11.5
   * You can now pass PEP-0496 Environment Markers together with the package
     name, and they get passed into the ``requirements.txt`` file.
-    Thanks @meejah 
+    Thanks @meejah
 
 0.11.4
   * PackageErrors happening in CLI suppressed just the error message out on
