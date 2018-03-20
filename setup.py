@@ -25,6 +25,7 @@ setup(
         },
     url='https://github.com/peterbe/hashin',
     include_package_data=True,
+    install_requires=['packaging'],
     tests_require=['pytest', 'mock'],
     setup_requires=['pytest-runner'],
     classifiers=[

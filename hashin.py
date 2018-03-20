@@ -14,7 +14,7 @@ import json
 from itertools import chain
 
 import pip
-from pip._vendor.packaging.version import parse
+from packaging.version import parse
 
 if sys.version_info >= (3,):
     from urllib.request import urlopen
