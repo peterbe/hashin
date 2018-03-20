@@ -1,24 +1,9 @@
 sudo: false
 language: python
-python: 3.6
-
-# Hopefully temporary
-addons:
-  apt:
-    sources:
-      - deadsnakes
-    packages:
-      - python3.5
-
-env:
-  - TOX_ENV=py27
-  - TOX_ENV=py34
-  - TOX_ENV=py35
-  - TOX_ENV=py36
-  - TOX_ENV=lint
-branches:
-  only:
-  - master
-before_install: travis_retry pip install twine "pip>=8.0" tox
-script: tox -e $TOX_ENV
-cache: pip
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+install: pip install tox-travis
+script: tox
