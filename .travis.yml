@@ -21,12 +21,4 @@ branches:
   - master
 before_install: travis_retry pip install twine "pip>=8.0" tox
 script: tox -e $TOX_ENV
-deploy:
-  provider: pypi
-  user: peterbe
-  password:
-    secure: DrCqlC+zKQ7sH3PyBn3ZP3R+9tdoyFypEaMnqcp5GuAWoxom2Cw4mJ6f7DJA4jkI9rT8G75/GARZpABTxiGmvuSKVSaOA/c2tEeHjUWA0gqCRlcqs+gdNSRfzC8qB0xwiLwPu1kHfybxO3W7qAvV1SD/EEFI3+/5DEYNHM+EAcKZO6ybdRazem3YyObq5lzFqBcf4V5CWDww+wvyutOrfpBNp/mLQAUjy3DMIl0ISB0sIyvXRTc52k/fdH3u7CKD1XzhaFji+eCNLvp/1dzlARNR+e5NAf2Dyrv8dq4shq4Y/IATjmSy0gzXVUaJLWFNtEdlN5hKOpO8OupzUshvhvzWjmuxwMBKHHVCG8XXSAOuYkaU4iT/2FPT4axtQBKSVevlGrkWauZavrq6p2mlDK+7pu1xZdxDaTcla5WZIcKtp5R12X453PjL9DW8mFfQfp6+3vzSbvrxlY/PSt/KjJvCjPgwiSEEbp/09UBi+kHiLzrnX/2vs5SkVGeS2DxT8qWa8aQcnV633G150yJt8JALrNt6xJs1Weh2Xn3AM6INrqEXI58D4fdnNefTneLs9BoF7sNiwFpcJvJ/B9QLFcZSHxtNao9qzgpFZeyylT0ymKAw3xXsBAqPrx39RfL7H0sbooZuI+h4phnZoq5rbDclHXCVNZoJftX8cjn36yQ=
-  on:
-    repo: peterbe/hashin
-  distributions: sdist bdist_wheel
 cache: pip
