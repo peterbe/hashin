@@ -1,7 +1,5 @@
 import argparse
 
-from nose.tools import eq_
-
 from hashin import parser
 
 
@@ -21,7 +19,7 @@ def test_everything():
         verbose=True,
         version=False,
     )
-    eq_(args, (expected, []))
+    assert args == (expected, [])
 
 
 def test_everything_long():
@@ -40,7 +38,7 @@ def test_everything_long():
         verbose=True,
         version=False,
     )
-    eq_(args, (expected, []))
+    assert args == (expected, [])
 
 
 def test_minimal():
@@ -53,4 +51,4 @@ def test_minimal():
         verbose=False,
         version=False,
     )
-    eq_(args, (expected, []))
+    assert args == (expected, [])

@@ -71,10 +71,6 @@ class _Response(object):
 
 class Tests(TestCase):
 
-    # For when you use nosetests
-    def shortDescription(self):
-        return None
-
     @mock.patch('hashin.urlopen')
     def test_get_latest_version_simple(self, murlopen):
         version = hashin.get_latest_version({'info': {'version': '0.3'}})
@@ -466,17 +462,12 @@ selenium==2.53.1 \
             with open(filename, 'w') as f:
                 f.write('')
 
-            # XXX When we don't bother to read the stdout, perhaps let it
-            # just print. Test runners like pytest and nosetests are
-            # good at "ignoring" stdout output.
-            my_stdout = StringIO()
-            with redirect_stdout(my_stdout):
-                retcode = hashin.run(
-                    'hashin',
-                    filename,
-                    'sha256',
-                    verbose=True
-                )
+            retcode = hashin.run(
+                'hashin',
+                filename,
+                'sha256',
+                verbose=True
+            )
 
             self.assertEqual(retcode, 0)
             with open(filename) as f:
@@ -541,14 +532,12 @@ selenium==2.53.1 \
             with open(filename, 'w') as f:
                 f.write('')
 
-            my_stdout = StringIO()
-            with redirect_stdout(my_stdout):
-                retcode = hashin.run(
-                    'django-redis==4.7.0',
-                    filename,
-                    'sha256',
-                    verbose=True
-                )
+            retcode = hashin.run(
+                'django-redis==4.7.0',
+                filename,
+                'sha256',
+                verbose=True
+            )
 
             self.assertEqual(retcode, 0)
             with open(filename) as f:
@@ -560,14 +549,12 @@ selenium==2.53.1 \
 
             # Now install the next package whose name is contained
             # in the first one.
-            my_stdout = StringIO()
-            with redirect_stdout(my_stdout):
-                retcode = hashin.run(
-                    'redis==2.10.5',
-                    filename,
-                    'sha256',
-                    verbose=True
-                )
+            retcode = hashin.run(
+                'redis==2.10.5',
+                filename,
+                'sha256',
+                verbose=True
+            )
 
             self.assertEqual(retcode, 0)
             with open(filename) as f:
@@ -619,10 +606,6 @@ selenium==2.53.1 \
                         ]
                     }
                 })
-            # elif url == "https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz":
-            #     return _Response(b"Some tarball content\n")
-            # elif url == "https://pypi.org/packages/source/p/hashin/hashin-0.11.tar.gz":
-            #     return _Response(b"Some different tarball content\n")
 
             raise NotImplementedError(url)
 
@@ -632,14 +615,12 @@ selenium==2.53.1 \
             with open(filename, 'w') as f:
                 f.write('')
 
-            my_stdout = StringIO()
-            with redirect_stdout(my_stdout):
-                retcode = hashin.run(
-                    'HAShin==0.10',
-                    filename,
-                    'sha256',
-                    verbose=True
-                )
+            retcode = hashin.run(
+                'HAShin==0.10',
+                filename,
+                'sha256',
+                verbose=True
+            )
 
             self.assertEqual(retcode, 0)
             with open(filename) as f:
@@ -767,14 +748,12 @@ selenium==2.53.1 \
             with open(filename, 'w') as f:
                 f.write('')
 
-            my_stdout = StringIO()
-            with redirect_stdout(my_stdout):
-                retcode = hashin.run(
-                    "enum34==1.1.6; python_version <= '3.4'",
-                    filename,
-                    'sha256',
-                    verbose=True
-                )
+            retcode = hashin.run(
+                "enum34==1.1.6; python_version <= '3.4'",
+                filename,
+                'sha256',
+                verbose=True
+            )
 
             self.assertEqual(retcode, 0)
             with open(filename) as f:
@@ -1083,13 +1062,6 @@ selenium==2.53.1 \
                         ]
                     }
                 })
-            # elif url == 'https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl':
-            #     return _Response(b'Some py2 wheel content\n')
-            # elif url == 'https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl':
-            #     return _Response(b'Some py3 wheel content\n')
-            # elif url == 'https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz':
-            #     return _Response(b'Some tarball content\n')
-
             elif url == 'https://pypi.org/pypi/uggamugga/json':
                 return _Response({
                     'info': {

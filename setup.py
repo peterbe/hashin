@@ -25,8 +25,8 @@ setup(
         },
     url='https://github.com/peterbe/hashin',
     include_package_data=True,
-    tests_require=['nose>=1.3.0,<2.0', 'mock'],
-    test_suite='nose.collector',
+    tests_require=['pytest', 'mock'],
+    setup_requires=['pytest-runner'],
     classifiers=[
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',

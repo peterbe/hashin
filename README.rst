@@ -186,11 +186,12 @@ Simply run::
 Running tests with test coverage
 ================================
 
-To run the tests with test coverage, with ``nosetests`` run something like
+To run the tests with test coverage, with ``pytest`` run something like
 this::
 
-    nosetests --with-coverage --cover-package=hashin --cover-html
-    open cover/index.html
+    $ pip install pytest-cover
+    $ pytest --cov hashin --cov-report html tests
+    $ open htmlcov/index.html
 
 
 Debugging
@@ -227,8 +228,8 @@ Version History
     ``pip`` to get the hash.
 
   * Testing no runs Python 2.6 and Python 3.3.
-  
-  * All hashes, per package, are sorted (by the hash) to make it more 
+
+  * All hashes, per package, are sorted (by the hash) to make it more
     predictable.
 
 0.11.5
