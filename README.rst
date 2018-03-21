@@ -221,6 +221,14 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.13.0
+  * Two new dependencies for ``hashin``: ``pip-api`` and ``packaging``.
+    This means we no longer need to *import* ``pip`` and rely on private
+    APIs.
+    `Thanks @di! <https://github.com/peterbe/hashin/pull/59>`_
+    This also means you can no longer install ``hashin`` on Python 2.6 and
+    Python ``<=3.3``.
+
 0.12.0
   * Switch from ``pypi.python.org/pypi/<package>/json`` to
     ``pypi.org/pypi/<package>/json`` which also means the sha256 hash is part
