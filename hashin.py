@@ -13,8 +13,8 @@ import sys
 import json
 from itertools import chain
 
-import pip
-from pip._vendor.packaging.version import parse
+import pip_api
+from packaging.version import parse
 
 if sys.version_info >= (3,):
     from urllib.request import urlopen
@@ -72,7 +72,7 @@ parser.add_argument(
 )
 
 
-major_pip_version = int(pip.__version__.split('.')[0])
+major_pip_version = int(pip_api.version().split('.')[0])
 if major_pip_version < 8:
     raise ImportError(
         'hashin only works with pip 8.x or greater'
@@ -363,7 +363,7 @@ def get_releases_hashes(releases, algorithm, verbose=False):
             elif verbose:
                 _verbose('  Re-using', filename)
 
-            found['hash'] = pip.commands.hash._hash_of_file(filename, algorithm)
+            found['hash'] = pip_api.hash(filename, algorithm)
         if verbose:
             _verbose('  Hash', found['hash'])
         yield {
