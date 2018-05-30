@@ -73,7 +73,10 @@ class Tests(TestCase):
 
     @mock.patch('hashin.urlopen')
     def test_get_latest_version_simple(self, murlopen):
-        version = hashin.get_latest_version({'info': {'version': '0.3'}})
+        version = hashin.get_latest_version(
+            {'info': {'version': '0.3'}},
+            False
+        )
         self.assertEqual(version, '0.3')
 
     @mock.patch('hashin.urlopen')
@@ -91,8 +94,42 @@ class Tests(TestCase):
                 '2.0b2': {},
                 '2.0c3': {},
             }
-        })
+        }, False)
         self.assertEqual(version, '0.999')
+
+    @mock.patch('hashin.urlopen')
+    def test_get_latest_version_only_pre_release(self, murlopen):
+        self.assertRaises(
+            hashin.NoVersionsError,
+            hashin.get_latest_version,
+            {
+                'info': {
+                    'version': '0.3',
+                },
+                'releases': {
+                    '1.1.0rc1': {},
+                    '1.1rc1': {},
+                    '1.0a1': {},
+                    '2.0b2': {},
+                    '2.0c3': {},
+                }
+            },
+            False,
+        )
+
+        version = hashin.get_latest_version({
+            'info': {
+                'version': '0.3',
+            },
+            'releases': {
+                '1.1.0rc1': {},
+                '1.1rc1': {},
+                '1.0a1': {},
+                '2.0b2': {},
+                '2.0c3': {},
+            }
+        }, True)
+        self.assertEqual(version, '2.0c3')
 
     @mock.patch('hashin.urlopen')
     def test_get_latest_version_non_pre_release_leading_zeros(self, murlopen):
@@ -105,7 +142,7 @@ class Tests(TestCase):
                 '0.04.21': {},
                 '0.04.09': {},
             }
-        })
+        }, False)
         self.assertEqual(version, '0.04.21')
 
     @mock.patch('hashin.urlopen')

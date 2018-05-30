@@ -59,6 +59,11 @@ parser.add_argument(
     action='store_true',
 )
 parser.add_argument(
+    '--include-prereleases',
+    help='Include pre-releases (off by default)',
+    action='store_true',
+)
+parser.add_argument(
     '-p', '--python-version',
     help='Python version to add wheels for. May be used multiple times.',
     action='append',
@@ -81,6 +86,10 @@ if major_pip_version < 8:
 
 class PackageError(Exception):
     pass
+
+
+class NoVersionsError(Exception):
+    """When there are no valid versions found."""
 
 
 def _verbose(*args):
@@ -127,6 +136,7 @@ def run_single_package(
     algorithm,
     python_versions=None,
     verbose=False,
+    include_prereleases=False,
 ):
     restriction = None
     if ';' in spec:
@@ -143,7 +153,8 @@ def run_single_package(
         version=version,
         verbose=verbose,
         python_versions=python_versions,
-        algorithm=algorithm
+        algorithm=algorithm,
+        include_prereleases=include_prereleases,
     )
     package = data['package']
 
@@ -202,7 +213,7 @@ def amend_requirements_content(requirements, package, new_lines):
     return requirements
 
 
-def get_latest_version(data):
+def get_latest_version(data, include_prereleases):
     """
     Return the version string of what we think is the latest version.
     In the data blob from PyPI there is the info->version key which
@@ -214,11 +225,22 @@ def get_latest_version(data):
         # This feels kinda strange but it has worked for years
         return data['info']['version']
     all_versions = []
+    count_prereleases = 0
     for version in data['releases']:
         v = parse(version)
-        if not v.is_prerelease:
+        if not v.is_prerelease or include_prereleases:
             all_versions.append((v, version))
+        else:
+            count_prereleases += 1
     all_versions.sort(reverse=True)
+    if not all_versions:
+        msg = "Not a single valid version found."
+        if not include_prereleases and count_prereleases:
+            msg += (
+                " But, found {0} pre-releases. Consider running again "
+                "with the --include-prereleases flag."
+            )
+        raise NoVersionsError(msg)
     # return the highest non-pre-release version
     return str(all_versions[0][1])
 
@@ -378,6 +400,7 @@ def get_package_hashes(
     algorithm=DEFAULT_ALGORITHM,
     python_versions=(),
     verbose=False,
+    include_prereleases=False,
 ):
     """
     Gets the hashes for the given package.
@@ -404,7 +427,7 @@ def get_package_hashes(
     """
     data = get_package_data(package, verbose)
     if not version:
-        version = get_latest_version(data)
+        version = get_latest_version(data, include_prereleases)
         assert version
         if verbose:
             _verbose('Latest version for {0} is {1}'.format(
@@ -472,6 +495,7 @@ def main():
             args.algorithm,
             args.python_version,
             verbose=args.verbose,
+            include_prereleases=args.include_prereleases,
         )
     except PackageError as exception:
         print(str(exception), file=sys.stderr)

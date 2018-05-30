@@ -18,6 +18,7 @@ def test_everything():
         requirements_file='reqs.txt',
         verbose=True,
         version=False,
+        include_prereleases=False,
     )
     assert args == (expected, [])
 
@@ -37,6 +38,7 @@ def test_everything_long():
         requirements_file='reqs.txt',
         verbose=True,
         version=False,
+        include_prereleases=False,
     )
     assert args == (expected, [])
 
@@ -50,5 +52,6 @@ def test_minimal():
         requirements_file='requirements.txt',
         verbose=False,
         version=False,
+        include_prereleases=False,
     )
     assert args == (expected, [])
