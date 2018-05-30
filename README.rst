@@ -223,7 +223,7 @@ Version History
 
 0.13.1
   * Ability to pass ``--include-prereleases`` if you're trying to add
-  a package that *only* has pre-releases.
+    a package that *only* has pre-releases.
 
 0.13.0
   * Two new dependencies for ``hashin``: ``pip-api`` and ``packaging``.
