@@ -35,6 +35,11 @@ if major_pip_version < 8:
         "hashin only works with pip 8.x or greater"
     )
 
+if major_pip_version < 10:
+    from pip.commands.hash import _hash_of_file
+else:
+    from pip._internal.commands.hash import _hash_of_file
+
 
 class PackageError(Exception):
     pass
@@ -157,7 +162,7 @@ def get_hashes(data, version, algorithm, verbose=False):
                 f.write(_download(url, binary=True))
         elif verbose:
             _verbose("  Re-using", filename)
-        hash_ = pip.commands.hash._hash_of_file(filename, algorithm)
+        hash_ = _hash_of_file(filename, algorithm)
         if hash_ in yielded:
             continue
         if verbose:

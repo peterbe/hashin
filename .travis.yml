@@ -5,12 +5,21 @@ python:
 - 3.3
 - 3.4
 - 3.5
+env:
+- PIP_VER=">=8.0,<10.0"
+- PIP_VER=">=10.0"
+matrix:
+  exclude:
+  # pip>=10.0 doesn't support python 2.6
+  - python: 2.6
+    env: PIP_VER=">=10.0"
 branches:
   only:
   - master
 before_install:
-- travis_retry pip install twine "pip>=8.0"
-script: python setup.py test
+- travis_retry pip install -U twine "pip$PIP_VER"
+script:
+- python setup.py test
 deploy:
   provider: pypi
   user: peterbe
