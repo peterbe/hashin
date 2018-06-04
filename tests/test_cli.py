@@ -923,9 +923,9 @@ selenium==2.53.1 \
 
     def test_expand_python_version(self):
         self.assertEqual(sorted(hashin.expand_python_version('2.7')),
-                         ['2.7', 'cp27', 'py2', 'py2.7', 'py2.py3', 'source'])
+                         ['2.7', 'cp27', 'py2', 'py2.7', 'py2.py3', 'py27', 'source'])
         self.assertEqual(sorted(hashin.expand_python_version('3.5')),
-                         ['3.5', 'cp35', 'py2.py3', 'py3', 'py3.5', 'source'])
+                         ['3.5', 'cp35', 'py2.py3', 'py3', 'py3.5', 'py35', 'source'])
 
     @cleanup_tmpdir('hashin*')
     @mock.patch('hashin.urlopen')

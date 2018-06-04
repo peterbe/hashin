@@ -261,6 +261,7 @@ def expand_python_version(version):
         'cp{major}{minor}',
         'py{major}',
         'py{major}.{minor}',
+        'py{major}{minor}',
         'source',
         'py2.py3',
     ]
