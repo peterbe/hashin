@@ -1,6 +1,6 @@
-=====
+======
 hashin
-========
+======
 
 .. image:: https://travis-ci.org/peterbe/hashin.svg?branch=master
     :target: https://travis-ci.org/peterbe/hashin
