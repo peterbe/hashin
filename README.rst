@@ -221,6 +221,12 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.13.2
+  * Match Python versions as ``py{major}{minor}`` additionally. Solves
+    problem with installing packages with files like
+    ``Paste-2.0.3-py34-none-any.whl``.
+    `Thanks @danfoster! <https://github.com/peterbe/hashin/pull/67>`_
+
 0.13.1
   * Ability to pass ``--include-prereleases`` if you're trying to add
     a package that *only* has pre-releases.
