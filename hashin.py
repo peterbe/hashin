@@ -304,7 +304,7 @@ CLASSIFY_ARCHIVE_RE = re.compile('''
 
 CLASSIFY_EXE_RE = re.compile('''
     ^(?P<package>.+)-
-    (?P<version>\d[^-]*)-
+    (?P<version>\d[^-]*)[-\.]
     ((?P<platform>[^-]*)-)?
     (?P<python_version>[^-]+)
     .(?P<format>(exe|msi))
