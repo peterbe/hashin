@@ -892,6 +892,15 @@ selenium==2.53.1 \
             'platform': None,
             'format': 'egg',
         })
+        url = 'https://files.pythonhosted.org/packages/26/01/0330e3ba13628827f10fcd6c3c8d778a5aa3e4d0a09d05619f074ba2d87e/nltk-3.2.4.win32.exe'
+        self.assertEqual(hashin.release_url_metadata(url), {
+            'package': 'nltk',
+            'version': '3.2.4',
+            'python_version': mock.ANY,
+            'abi': None,
+            'platform': None,
+            'format': 'exe',
+        })
         url = 'https://pypi.org/packages/2.7/g/gevent/gevent-1.1.0.win-amd64-py2.7.exe'
         self.assertEqual(hashin.release_url_metadata(url), {
             'package': 'gevent',
