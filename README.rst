@@ -221,6 +221,10 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.13.3
+  * Makes it possible to install ``nltk`` on Windows.
+    `Thanks @chrispbailey! <https://github.com/peterbe/hashin/pull/72>`_
+
 0.13.2
   * Match Python versions as ``py{major}{minor}`` additionally. Solves
     problem with installing packages with files like
