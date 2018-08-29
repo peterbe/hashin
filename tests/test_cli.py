@@ -417,7 +417,7 @@ selenium==2.53.1 \
                 out_lines[1]
             )
             self.assertTrue(
-                'Found URL https://pypi.org/packages' in out_lines[1],
+                'Found hash for https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl' in out_lines[1],
                 out_lines[1]
             )
             # hash it got
@@ -986,15 +986,12 @@ selenium==2.53.1 \
             'version': '0.10',
             'hashes': [
                 {
-                    'url': 'https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
                     'hash': 'aaaaa'
                 },
                 {
-                    'url': 'https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
                     'hash': 'bbbbb'
                 },
                 {
-                    'url': 'https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz',
                     'hash': 'ccccc'
                 }
             ]
@@ -1047,10 +1044,17 @@ selenium==2.53.1 \
 
         murlopen.side_effect = mocked_get
 
-        result = hashin.get_package_hashes(
-            package='hashin',
-            version='0.10',
-            algorithm='sha512',
+        my_stdout = StringIO()
+        with redirect_stdout(my_stdout):
+            result = hashin.get_package_hashes(
+                package='hashin',
+                version='0.10',
+                algorithm='sha512',
+                verbose=True,
+            )
+        out_lines = my_stdout.getvalue().splitlines()
+        self.assertTrue(
+            'Found URL https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl' in out_lines[1]
         )
 
         expected = {
@@ -1058,15 +1062,12 @@ selenium==2.53.1 \
             'version': '0.10',
             'hashes': [
                 {
-                    'url': 'https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl',
                     'hash': '0d63bf4c115154781846ecf573049324f06b021a1d4b92da4fae2bf491da2b83a13096b14d73e73cefad36855f4fa936bac4b2357dabf05a2b1e7329ff1e5455'
                 },
                 {
-                    'url': 'https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl',
                     'hash': '45d1c5d2237a3b4f78b4198709fb2ecf1f781c8234ce3d94356f2100a36739433952c6c13b2843952f608949e6baa9f95055a314487cd8fb3f9d76522d8edb50'
                 },
                 {
-                    'url': 'https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz',
                     'hash': 'c32e6d9fb09dc36ab9222c4606a1f43a2dcc183a8c64bdd9199421ef779072c174fa044b155babb12860cf000e36bc4d358694fa22420c997b1dd75b623d4daa'
                 }
             ]

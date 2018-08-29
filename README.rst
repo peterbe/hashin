@@ -221,6 +221,11 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.13.x
+
+  * Don't show URLs when using ``--verbose`` if files don't need to be
+    downloaded. See https://github.com/peterbe/hashin/issues/73
+
 0.13.3
   * Makes it possible to install ``nltk`` on Windows.
     `Thanks @chrispbailey! <https://github.com/peterbe/hashin/pull/72>`_
