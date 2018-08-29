@@ -364,15 +364,17 @@ def get_package_data(package, verbose=False):
 
 def get_releases_hashes(releases, algorithm, verbose=False):
     for found in releases:
-        url = found['url']
-        if verbose:
-            _verbose('Found URL', url)
         digests = found['digests']
         try:
             found['hash'] = digests[algorithm]
+            if verbose:
+                _verbose('Found hash for', found['url'])
         except KeyError:
             # The algorithm is NOT in the 'digests' dict.
             # We have to download the file and use pip
+            url = found['url']
+            if verbose:
+                _verbose('Found URL', url)
             download_dir = tempfile.gettempdir()
             filename = os.path.join(
                 download_dir,
@@ -390,7 +392,6 @@ def get_releases_hashes(releases, algorithm, verbose=False):
         if verbose:
             _verbose('  Hash', found['hash'])
         yield {
-            'url': url,
             'hash': found['hash']
         }
 
