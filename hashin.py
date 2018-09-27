@@ -234,11 +234,11 @@ def get_latest_version(data, include_prereleases):
             count_prereleases += 1
     all_versions.sort(reverse=True)
     if not all_versions:
-        msg = "Not a single valid version found."
+        msg = "No valid version found."
         if not include_prereleases and count_prereleases:
             msg += (
                 " But, found {0} pre-releases. Consider running again "
-                "with the --include-prereleases flag."
+                "with the --include-prereleases flag.".format(count_prereleases)
             )
         raise NoVersionsError(msg)
     # return the highest non-pre-release version
