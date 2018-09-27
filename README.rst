@@ -223,6 +223,9 @@ Version History
 
 0.13.x
 
+  * Better error message when no versions, but some pre-releases found.
+    See https://github.com/peterbe/hashin/issues/76
+
   * Don't show URLs when using ``--verbose`` if files don't need to be
     downloaded. See https://github.com/peterbe/hashin/issues/73
 

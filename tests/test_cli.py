@@ -99,23 +99,27 @@ class Tests(TestCase):
 
     @mock.patch('hashin.urlopen')
     def test_get_latest_version_only_pre_release(self, murlopen):
-        self.assertRaises(
-            hashin.NoVersionsError,
-            hashin.get_latest_version,
-            {
-                'info': {
-                    'version': '0.3',
+        with self.assertRaises(hashin.NoVersionsError) as cm:
+            hashin.get_latest_version(
+                {
+                    'info': {
+                        'version': '0.3',
+                    },
+                    'releases': {
+                        '1.1.0rc1': {},
+                        '1.1rc1': {},
+                        '1.0a1': {},
+                        '2.0b2': {},
+                        '2.0c3': {},
+                    }
                 },
-                'releases': {
-                    '1.1.0rc1': {},
-                    '1.1rc1': {},
-                    '1.0a1': {},
-                    '2.0b2': {},
-                    '2.0c3': {},
-                }
-            },
-            False,
-        )
+                False
+            )
+        exception = cm.exception
+        self.assertEqual(str(exception), (
+            "No valid version found. But, found 5 pre-releases. "
+            "Consider running again with the --include-prereleases flag."
+        ))
 
         version = hashin.get_latest_version({
             'info': {
