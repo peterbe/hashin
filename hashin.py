@@ -75,6 +75,12 @@ parser.add_argument(
     action='store_true',
     default=False,
 )
+parser.add_argument(
+    '--dry-run',
+    help='Don\'t touch requirements.txt and just show hashes',
+    action='store_true',
+    default=False,
+)
 
 
 major_pip_version = int(pip_api.version().split('.')[0])
@@ -101,7 +107,7 @@ def _download(url, binary=False):
     # Note that urlopen will, by default, follow redirects.
     status_code = r.getcode()
 
-    if status_code >= 301 and status_code < 400:
+    if 301 <= status_code < 400:
         location, _ = cgi.parse_header(r.headers.get('location', ''))
         if not location:
             raise PackageError("No 'Location' header on {0} ({1})".format(
@@ -137,6 +143,7 @@ def run_single_package(
     python_versions=None,
     verbose=False,
     include_prereleases=False,
+    dry_run=False,
 ):
     restriction = None
     if ';' in spec:
@@ -159,7 +166,6 @@ def run_single_package(
     package = data['package']
 
     maybe_restriction = '' if not restriction else '; {0}'.format(restriction)
-    new_lines = ''
     new_lines = '{0}=={1}{2} \\\n'.format(
         package,
         data['version'],
@@ -175,6 +181,11 @@ def run_single_package(
             new_lines += ' \\'
         new_lines += '\n'
 
+    if dry_run:
+        if verbose:
+            _verbose('Dry run, not editing ', file)
+        print(new_lines)
+        return
     if verbose:
         _verbose('Editing', file)
     with open(file) as f:
@@ -498,6 +509,7 @@ def main():
             args.python_version,
             verbose=args.verbose,
             include_prereleases=args.include_prereleases,
+            dry_run=args.dry_run,
         )
     except PackageError as exception:
         print(str(exception), file=sys.stderr)
