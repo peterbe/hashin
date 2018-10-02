@@ -687,6 +687,72 @@ selenium==2.53.1 \
 
     @cleanup_tmpdir('hashin*')
     @mock.patch('hashin.urlopen')
+    def test_run_dry(self, murlopen):
+        """dry run should edit the requirements.txt file and print
+        hashes and package name in the console
+        """
+
+        def mocked_get(url, **options):
+            if url == 'https://pypi.org/pypi/hashin/json':
+                return _Response({
+                    'info': {
+                        'version': '0.11',
+                        'name': 'hashin',
+                    },
+                    'releases': {
+                        '0.11': [
+                            {
+                                'url': 'https://pypi.org/packages/source/p/hashin/hashin-0.11.tar.gz',
+                                'digests': {
+                                    'sha256': 'bbbbb',
+                                },
+                            }
+                        ],
+                        '0.10': [
+                            {
+                                'url': 'https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz',
+                                'digests': {
+                                    'sha256': 'aaaaa',
+                                },
+                            }
+                        ]
+                    }
+                })
+
+        murlopen.side_effect = mocked_get
+
+        with tmpfile() as filename:
+            with open(filename, 'w') as f:
+                f.write('')
+
+            my_stdout = StringIO()
+            with redirect_stdout(my_stdout):
+                retcode = hashin.run(
+                    'hashin==0.10',
+                    filename,
+                    'sha256',
+                    verbose=False,
+                    dry_run=True,
+                )
+
+                self.assertEqual(retcode, 0)
+
+            # verify that nothing has been written to file
+            with open(filename) as f:
+                output = f.read()
+            assert not output
+
+        # Check dry run output
+        out_lines = my_stdout.getvalue().splitlines()
+        self.assertTrue(
+            'hashin==0.10' in out_lines[0]
+        )
+        self.assertTrue(
+            '--hash=sha256:aaaaa' in out_lines[1]
+        )
+
+    @cleanup_tmpdir('hashin*')
+    @mock.patch('hashin.urlopen')
     def test_run_pep_0496(self, murlopen):
         """
         Properly pass through specifiers which look like:

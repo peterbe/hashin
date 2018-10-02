@@ -19,6 +19,7 @@ def test_everything():
         verbose=True,
         version=False,
         include_prereleases=False,
+        dry_run=False,
     )
     assert args == (expected, [])
 
@@ -30,6 +31,7 @@ def test_everything_long():
         '--algorithm', 'sha512',
         '--python-version', '3.5',
         '--verbose',
+        '--dry-run',
     ])
     expected = argparse.Namespace(
         algorithm='sha512',
@@ -39,6 +41,7 @@ def test_everything_long():
         verbose=True,
         version=False,
         include_prereleases=False,
+        dry_run=True,
     )
     assert args == (expected, [])
 
@@ -53,5 +56,6 @@ def test_minimal():
         verbose=False,
         version=False,
         include_prereleases=False,
+        dry_run=False,
     )
     assert args == (expected, [])
