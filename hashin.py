@@ -15,6 +15,7 @@ from itertools import chain
 
 import pip_api
 from packaging.version import parse
+import difflib
 
 if sys.version_info >= (3,):
     from urllib.request import urlopen
@@ -77,7 +78,7 @@ parser.add_argument(
 )
 parser.add_argument(
     '--dry-run',
-    help='Don\'t touch requirements.txt and just show hashes',
+    help="Don't touch requirements.txt and just show the diff",
     action='store_true',
     default=False,
 )
@@ -181,22 +182,31 @@ def run_single_package(
             new_lines += ' \\'
         new_lines += '\n'
 
-    if dry_run:
-        if verbose:
-            _verbose('Dry run, not editing ', file)
-        print(new_lines)
-        return
-    if verbose:
-        _verbose('Editing', file)
     with open(file) as f:
-        requirements = f.read()
+        old_requirements = f.read()
     requirements = amend_requirements_content(
-        requirements,
+        old_requirements,
         package,
         new_lines
     )
-    with open(file, 'w') as f:
-        f.write(requirements)
+    if dry_run:
+        if verbose:
+            _verbose('Dry run, not editing ', file)
+        print(
+            "".join(
+                difflib.unified_diff(
+                    old_requirements.splitlines(True),
+                    requirements.splitlines(True),
+                    fromfile="Old",
+                    tofile="New",
+                )
+            )
+        )
+    else:
+        with open(file, 'w') as f:
+            f.write(requirements)
+        if verbose:
+            _verbose('Editing', file)
 
 
 def amend_requirements_content(requirements, package, new_lines):

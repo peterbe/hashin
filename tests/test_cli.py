@@ -745,10 +745,10 @@ selenium==2.53.1 \
         # Check dry run output
         out_lines = my_stdout.getvalue().splitlines()
         self.assertTrue(
-            'hashin==0.10' in out_lines[0]
+            '+hashin==0.10' in out_lines[3]
         )
         self.assertTrue(
-            '--hash=sha256:aaaaa' in out_lines[1]
+            '+--hash=sha256:aaaaa' in out_lines[4].replace(" ", "")
         )
 
     @cleanup_tmpdir('hashin*')

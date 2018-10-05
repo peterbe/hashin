@@ -9,7 +9,7 @@ def test_everything():
         '-r', 'reqs.txt',
         '-a', 'sha512',
         '-p', '3.5',
-        '-v',
+        '-v', '--dry-run'
     ])
     expected = argparse.Namespace(
         algorithm='sha512',
@@ -19,7 +19,7 @@ def test_everything():
         verbose=True,
         version=False,
         include_prereleases=False,
-        dry_run=False,
+        dry_run=True,
     )
     assert args == (expected, [])
 

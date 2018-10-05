@@ -124,9 +124,9 @@ this as a fallback in the case a suitable wheel cannot be found.
 Dry run mode
 ============
 
-There are some use cases, when you maybe don't want to edit your requirements.txt
-right away. You can use the ``-dry-run`` argument to just print the lines, as if they
-would be added to your requirements.txt file.
+There are some use cases, when you maybe don't want to edit your ``requirements.txt``
+right away. You can use the ``--dry-run`` argument to show the diff, so you
+can preview the changes to your ``requirements.txt`` file.
 
 Example::
 
@@ -134,11 +134,12 @@ Example::
 
 Would result in a printout on the command line::
 
-    requests==2.19.1 \
-        --hash=sha256:63b52e3c866428a224f97cab011de738c36aec0185aa91cfacd418b5d58911d1 \
-        --hash=sha256:ec22d826a36ed72a7358ff3fe56cbd4ba69dd7a6718ffd450ff0e9df7a47ce6a
-
-
+    --- Old
+    +++ New
+    @@ -0,0 +1,3 @@
+    +requests==2.19.1 \
+    +    --hash=sha256:63b52e3c866428a224f97cab011de738c36aec0185aa91cfacd418b5d58911d1 \
+    +    --hash=sha256:ec22d826a36ed72a7358ff3fe56cbd4ba69dd7a6718ffd450ff0e9df7a47ce6a
 
 PEP-0496 Environment Markers
 ============================
