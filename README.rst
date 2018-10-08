@@ -252,6 +252,10 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.13.x
+
+  * All code is now formatted with `Black <https://pypi.org/project/black/>`_.
+
 0.13.4
 
   * Ability to pass ``--dry-run`` which prints a diff of what it *would*
