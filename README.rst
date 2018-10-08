@@ -241,7 +241,10 @@ put it directly into ``pip``.
 Version History
 ===============
 
-0.13.x
+0.13.4
+
+  * Ability to pass ``--dry-run`` which prints a diff of what it *would*
+    do to your requirements file. See https://github.com/peterbe/hashin/pull/78
 
   * Better error message when no versions, but some pre-releases found.
     See https://github.com/peterbe/hashin/issues/76
