@@ -24,71 +24,65 @@ else:
 
     if sys.version_info < (2, 7, 9):
         import warnings
+
         warnings.warn(
-            'In Python 2.7.9, the built-in urllib.urlopen() got upgraded '
-            'so that it, by default, does HTTPS certificate verification. '
-            'All prior versions do not. That means you run the risk of '
-            'downloading from a server that claims (man-in-the-middle '
-            'attack) to be https://pypi.python.org but actually is not. '
-            'Consider upgrading your version of Python.'
+            "In Python 2.7.9, the built-in urllib.urlopen() got upgraded "
+            "so that it, by default, does HTTPS certificate verification. "
+            "All prior versions do not. That means you run the risk of "
+            "downloading from a server that claims (man-in-the-middle "
+            "attack) to be https://pypi.python.org but actually is not. "
+            "Consider upgrading your version of Python."
         )
 
-DEFAULT_ALGORITHM = 'sha256'
+DEFAULT_ALGORITHM = "sha256"
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    'packages',
+    "packages",
     help=(
-        'One or more package specifiers (e.g. some-package or '
-        'some-package==1.2.3)'
+        "One or more package specifiers (e.g. some-package or " "some-package==1.2.3)"
     ),
-    nargs='+'
+    nargs="+",
 )
 parser.add_argument(
-    '-r', '--requirements-file',
-    help='requirements file to write to (default requirements.txt)',
-    default='requirements.txt'
+    "-r",
+    "--requirements-file",
+    help="requirements file to write to (default requirements.txt)",
+    default="requirements.txt",
 )
 parser.add_argument(
-    '-a', '--algorithm',
-    help='The hash algorithm to use: one of sha256, sha384, sha512',
-    default=DEFAULT_ALGORITHM
+    "-a",
+    "--algorithm",
+    help="The hash algorithm to use: one of sha256, sha384, sha512",
+    default=DEFAULT_ALGORITHM,
+)
+parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true")
+parser.add_argument(
+    "--include-prereleases",
+    help="Include pre-releases (off by default)",
+    action="store_true",
 )
 parser.add_argument(
-    '-v', '--verbose',
-    help='Verbose output',
-    action='store_true',
-)
-parser.add_argument(
-    '--include-prereleases',
-    help='Include pre-releases (off by default)',
-    action='store_true',
-)
-parser.add_argument(
-    '-p', '--python-version',
-    help='Python version to add wheels for. May be used multiple times.',
-    action='append',
+    "-p",
+    "--python-version",
+    help="Python version to add wheels for. May be used multiple times.",
+    action="append",
     default=[],
 )
 parser.add_argument(
-    '--version',
-    help='Version of hashin',
-    action='store_true',
-    default=False,
+    "--version", help="Version of hashin", action="store_true", default=False
 )
 parser.add_argument(
-    '--dry-run',
+    "--dry-run",
     help="Don't touch requirements.txt and just show the diff",
-    action='store_true',
+    action="store_true",
     default=False,
 )
 
 
-major_pip_version = int(pip_api.version().split('.')[0])
+major_pip_version = int(pip_api.version().split(".")[0])
 if major_pip_version < 8:
-    raise ImportError(
-        'hashin only works with pip 8.x or greater'
-    )
+    raise ImportError("hashin only works with pip 8.x or greater")
 
 
 class PackageError(Exception):
@@ -100,7 +94,7 @@ class NoVersionsError(Exception):
 
 
 def _verbose(*args):
-    print('* ' + ' '.join(args))
+    print("* " + " ".join(args))
 
 
 def _download(url, binary=False):
@@ -109,22 +103,18 @@ def _download(url, binary=False):
     status_code = r.getcode()
 
     if 301 <= status_code < 400:
-        location, _ = cgi.parse_header(r.headers.get('location', ''))
+        location, _ = cgi.parse_header(r.headers.get("location", ""))
         if not location:
-            raise PackageError("No 'Location' header on {0} ({1})".format(
-                url,
-                status_code,
-            ))
+            raise PackageError(
+                "No 'Location' header on {0} ({1})".format(url, status_code)
+            )
         return _download(location)
     elif status_code != 200:
-        raise PackageError('Package not found. {0} on {1}'.format(
-            status_code,
-            url,
-        ))
+        raise PackageError("Package not found. {0} on {1}".format(status_code, url))
     if binary:
         return r.read()
-    _, params = cgi.parse_header(r.headers.get('Content-Type', ''))
-    encoding = params.get('charset', 'utf-8')
+    _, params = cgi.parse_header(r.headers.get("Content-Type", ""))
+    encoding = params.get("charset", "utf-8")
     return r.read().decode(encoding)
 
 
@@ -147,12 +137,12 @@ def run_single_package(
     dry_run=False,
 ):
     restriction = None
-    if ';' in spec:
-        spec, restriction = [x.strip() for x in spec.split(';', 1)]
-    if '==' in spec:
-        package, version = spec.split('==')
+    if ";" in spec:
+        spec, restriction = [x.strip() for x in spec.split(";", 1)]
+    if "==" in spec:
+        package, version = spec.split("==")
     else:
-        assert '>' not in spec and '<' not in spec
+        assert ">" not in spec and "<" not in spec
         package, version = spec, None
         # There are other ways to what the latest version is.
 
@@ -164,34 +154,23 @@ def run_single_package(
         algorithm=algorithm,
         include_prereleases=include_prereleases,
     )
-    package = data['package']
+    package = data["package"]
 
-    maybe_restriction = '' if not restriction else '; {0}'.format(restriction)
-    new_lines = '{0}=={1}{2} \\\n'.format(
-        package,
-        data['version'],
-        maybe_restriction
-    )
-    padding = ' ' * 4
-    for i, release in enumerate(data['hashes']):
-        new_lines += (
-            '{0}--hash={1}:{2}'
-            .format(padding, algorithm, release['hash'])
-        )
-        if i != len(data['hashes']) - 1:
-            new_lines += ' \\'
-        new_lines += '\n'
+    maybe_restriction = "" if not restriction else "; {0}".format(restriction)
+    new_lines = "{0}=={1}{2} \\\n".format(package, data["version"], maybe_restriction)
+    padding = " " * 4
+    for i, release in enumerate(data["hashes"]):
+        new_lines += "{0}--hash={1}:{2}".format(padding, algorithm, release["hash"])
+        if i != len(data["hashes"]) - 1:
+            new_lines += " \\"
+        new_lines += "\n"
 
     with open(file) as f:
         old_requirements = f.read()
-    requirements = amend_requirements_content(
-        old_requirements,
-        package,
-        new_lines
-    )
+    requirements = amend_requirements_content(old_requirements, package, new_lines)
     if dry_run:
         if verbose:
-            _verbose('Dry run, not editing ', file)
+            _verbose("Dry run, not editing ", file)
         print(
             "".join(
                 difflib.unified_diff(
@@ -203,32 +182,32 @@ def run_single_package(
             )
         )
     else:
-        with open(file, 'w') as f:
+        with open(file, "w") as f:
             f.write(requirements)
         if verbose:
-            _verbose('Editing', file)
+            _verbose("Editing", file)
 
 
 def amend_requirements_content(requirements, package, new_lines):
     # if the package wasn't already there, add it to the bottom
-    regex = '(^|\n|\n\r){0}=='.format(re.escape(package))
+    regex = "(^|\n|\n\r){0}==".format(re.escape(package))
     if not re.search(regex, requirements, re.IGNORECASE):
         # easy peasy
         if requirements:
-            requirements = requirements.strip() + '\n'
-        requirements += new_lines.strip() + '\n'
+            requirements = requirements.strip() + "\n"
+        requirements += new_lines.strip() + "\n"
     else:
         # need to replace the existing
         lines = []
-        padding = ' ' * 4
+        padding = " " * 4
         for line in requirements.splitlines():
-            if line.lower().startswith('{0}=='.format(package.lower())):
+            if line.lower().startswith("{0}==".format(package.lower())):
                 lines.append(line)
             elif lines and line.startswith(padding):
                 lines.append(line)
             elif lines:
                 break
-        combined = '\n'.join(lines + [''])
+        combined = "\n".join(lines + [""])
         requirements = requirements.replace(combined, new_lines)
 
     return requirements
@@ -240,14 +219,14 @@ def get_latest_version(data, include_prereleases):
     In the data blob from PyPI there is the info->version key which
     is just the latest in time. Ideally we want the latest non-pre-release.
     """
-    if not data.get('releases'):
+    if not data.get("releases"):
         # If there were no releases, fall back to the old way of doing
         # things with the info->version key.
         # This feels kinda strange but it has worked for years
-        return data['info']['version']
+        return data["info"]["version"]
     all_versions = []
     count_prereleases = 0
-    for version in data['releases']:
+    for version in data["releases"]:
         v = parse(version)
         if not v.is_prerelease or include_prereleases:
             all_versions.append((v, version))
@@ -273,27 +252,26 @@ def expand_python_version(version):
     >>> expand_python_version('3.5')
     ['3.5', 'py3', 'py2.py3', 'cp35']
     """
-    if not re.match(r'^\d\.\d$', version):
+    if not re.match(r"^\d\.\d$", version):
         return [version]
 
-    major, minor = version.split('.')
+    major, minor = version.split(".")
     patterns = [
-        '{major}.{minor}',
-        'cp{major}{minor}',
-        'py{major}',
-        'py{major}.{minor}',
-        'py{major}{minor}',
-        'source',
-        'py2.py3',
+        "{major}.{minor}",
+        "cp{major}{minor}",
+        "py{major}",
+        "py{major}.{minor}",
+        "py{major}{minor}",
+        "source",
+        "py2.py3",
     ]
-    return set(
-        pattern.format(major=major, minor=minor) for pattern in patterns
-    )
+    return set(pattern.format(major=major, minor=minor) for pattern in patterns)
 
 
 # This should match the naming convention laid out in PEP 0427
 # url = 'https://pypi.python.org/packages/3.4/P/Pygments/Pygments-2.1-py3-none-any.whl' # NOQA
-CLASSIFY_WHEEL_RE = re.compile('''
+CLASSIFY_WHEEL_RE = re.compile(
+    """
     ^(?P<package>.+)-
     (?P<version>\d[^-]*)-
     (?P<python_version>[^-]+)-
@@ -302,9 +280,12 @@ CLASSIFY_WHEEL_RE = re.compile('''
     .(?P<format>whl)
     (\#md5=.*)?
     $
-''', re.VERBOSE)
+""",
+    re.VERBOSE,
+)
 
-CLASSIFY_EGG_RE = re.compile('''
+CLASSIFY_EGG_RE = re.compile(
+    """
     ^(?P<package>.+)-
     (?P<version>\d[^-]*)-
     (?P<python_version>[^-]+)
@@ -312,18 +293,24 @@ CLASSIFY_EGG_RE = re.compile('''
     .(?P<format>egg)
     (\#md5=.*)?
     $
-''', re.VERBOSE)
+""",
+    re.VERBOSE,
+)
 
-CLASSIFY_ARCHIVE_RE = re.compile('''
+CLASSIFY_ARCHIVE_RE = re.compile(
+    """
     ^(?P<package>.+)-
     (?P<version>\d[^-]*)
     (-(?P<platform>[^\.]+))?
     .(?P<format>tar.(gz|bz2)|zip)
     (\#md5=.*)?
     $
-''', re.VERBOSE)
+""",
+    re.VERBOSE,
+)
 
-CLASSIFY_EXE_RE = re.compile('''
+CLASSIFY_EXE_RE = re.compile(
+    """
     ^(?P<package>.+)-
     (?P<version>\d[^-]*)[-\.]
     ((?P<platform>[^-]*)-)?
@@ -331,18 +318,20 @@ CLASSIFY_EXE_RE = re.compile('''
     .(?P<format>(exe|msi))
     (\#md5=.*)?
     $
-''', re.VERBOSE)
+""",
+    re.VERBOSE,
+)
 
 
 def release_url_metadata(url):
-    filename = url.split('/')[-1]
+    filename = url.split("/")[-1]
     defaults = {
-        'package': None,
-        'version': None,
-        'python_version': None,
-        'abi': None,
-        'platform': None,
-        'format': None,
+        "package": None,
+        "version": None,
+        "python_version": None,
+        "abi": None,
+        "platform": None,
+        "format": None,
     }
     simple_classifiers = [CLASSIFY_WHEEL_RE, CLASSIFY_EGG_RE, CLASSIFY_EXE_RE]
     for classifier in simple_classifiers:
@@ -354,10 +343,10 @@ def release_url_metadata(url):
     match = CLASSIFY_ARCHIVE_RE.match(filename)
     if match:
         defaults.update(match.groupdict())
-        defaults['python_version'] = 'source'
+        defaults["python_version"] = "source"
         return defaults
 
-    raise PackageError('Unrecognizable url: ' + url)
+    raise PackageError("Unrecognizable url: " + url)
 
 
 def filter_releases(releases, python_versions):
@@ -366,55 +355,50 @@ def filter_releases(releases, python_versions):
     )
     filtered = []
     for release in releases:
-        metadata = release_url_metadata(release['url'])
-        if metadata['python_version'] in python_versions:
+        metadata = release_url_metadata(release["url"])
+        if metadata["python_version"] in python_versions:
             filtered.append(release)
     return filtered
 
 
 def get_package_data(package, verbose=False):
-    url = 'https://pypi.org/pypi/%s/json' % package
+    url = "https://pypi.org/pypi/%s/json" % package
     if verbose:
         print(url)
     content = json.loads(_download(url))
-    if 'releases' not in content:
-        raise PackageError('package JSON is not sane')
+    if "releases" not in content:
+        raise PackageError("package JSON is not sane")
 
     return content
 
 
 def get_releases_hashes(releases, algorithm, verbose=False):
     for found in releases:
-        digests = found['digests']
+        digests = found["digests"]
         try:
-            found['hash'] = digests[algorithm]
+            found["hash"] = digests[algorithm]
             if verbose:
-                _verbose('Found hash for', found['url'])
+                _verbose("Found hash for", found["url"])
         except KeyError:
             # The algorithm is NOT in the 'digests' dict.
             # We have to download the file and use pip
-            url = found['url']
+            url = found["url"]
             if verbose:
-                _verbose('Found URL', url)
+                _verbose("Found URL", url)
             download_dir = tempfile.gettempdir()
-            filename = os.path.join(
-                download_dir,
-                os.path.basename(url.split('#')[0])
-            )
+            filename = os.path.join(download_dir, os.path.basename(url.split("#")[0]))
             if not os.path.isfile(filename):
                 if verbose:
-                    _verbose('  Downloaded to', filename)
-                with open(filename, 'wb') as f:
+                    _verbose("  Downloaded to", filename)
+                with open(filename, "wb") as f:
                     f.write(_download(url, binary=True))
             elif verbose:
-                _verbose('  Re-using', filename)
+                _verbose("  Re-using", filename)
 
-            found['hash'] = pip_api.hash(filename, algorithm)
+            found["hash"] = pip_api.hash(filename, algorithm)
         if verbose:
-            _verbose('  Hash', found['hash'])
-        yield {
-            'hash': found['hash']
-        }
+            _verbose("  Hash", found["hash"])
+        yield {"hash": found["hash"]}
 
 
 def get_package_hashes(
@@ -453,19 +437,16 @@ def get_package_hashes(
         version = get_latest_version(data, include_prereleases)
         assert version
         if verbose:
-            _verbose('Latest version for {0} is {1}'.format(
-                package,
-                version,
-            ))
+            _verbose("Latest version for {0} is {1}".format(package, version))
 
     # Independent of how you like to case type it, pick the correct
     # name from the PyPI index.
-    package = data['info']['name']
+    package = data["info"]["name"]
 
     try:
-        releases = data['releases'][version]
+        releases = data["releases"][version]
     except KeyError:
-        raise PackageError('No data found for version {0}'.format(version))
+        raise PackageError("No data found for version {0}".format(version))
 
     if python_versions:
         releases = filter_releases(releases, python_versions)
@@ -473,40 +454,28 @@ def get_package_hashes(
     if not releases:
         if python_versions:
             raise PackageError(
-                'No releases could be found for '
-                '{0} matching Python versions {1}'.format(
-                    version,
-                    python_versions
-                )
+                "No releases could be found for "
+                "{0} matching Python versions {1}".format(version, python_versions)
             )
         else:
-            raise PackageError(
-                'No releases could be found for {0}'.format(version)
-            )
+            raise PackageError("No releases could be found for {0}".format(version))
 
     # Sorting them helps make sure the results are more predictable
     # when running more than once for the same version
     hashes = sorted(
-        get_releases_hashes(
-            releases=releases,
-            algorithm=algorithm,
-            verbose=verbose
-        ),
-        key=lambda x: x['hash']
+        get_releases_hashes(releases=releases, algorithm=algorithm, verbose=verbose),
+        key=lambda x: x["hash"],
     )
-    return {
-        'package': package,
-        'version': version,
-        'hashes': hashes,
-    }
+    return {"package": package, "version": version, "hashes": hashes}
 
 
 def main():
-    if '--version' in sys.argv[1:]:
+    if "--version" in sys.argv[1:]:
         # Can't be part of argparse because the 'packages' is mandatory
         # print out the version of self
         import pkg_resources
-        print(pkg_resources.get_distribution('hashin').version)
+
+        print(pkg_resources.get_distribution("hashin").version)
         return 0
 
     args = parser.parse_args()
@@ -526,5 +495,5 @@ def main():
         return 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())
