@@ -271,7 +271,7 @@ def expand_python_version(version):
 # This should match the naming convention laid out in PEP 0427
 # url = 'https://pypi.python.org/packages/3.4/P/Pygments/Pygments-2.1-py3-none-any.whl' # NOQA
 CLASSIFY_WHEEL_RE = re.compile(
-    """
+    r"""
     ^(?P<package>.+)-
     (?P<version>\d[^-]*)-
     (?P<python_version>[^-]+)-
@@ -285,7 +285,7 @@ CLASSIFY_WHEEL_RE = re.compile(
 )
 
 CLASSIFY_EGG_RE = re.compile(
-    """
+    r"""
     ^(?P<package>.+)-
     (?P<version>\d[^-]*)-
     (?P<python_version>[^-]+)
@@ -298,7 +298,7 @@ CLASSIFY_EGG_RE = re.compile(
 )
 
 CLASSIFY_ARCHIVE_RE = re.compile(
-    """
+    r"""
     ^(?P<package>.+)-
     (?P<version>\d[^-]*)
     (-(?P<platform>[^\.]+))?
@@ -310,7 +310,7 @@ CLASSIFY_ARCHIVE_RE = re.compile(
 )
 
 CLASSIFY_EXE_RE = re.compile(
-    """
+    r"""
     ^(?P<package>.+)-
     (?P<version>\d[^-]*)[-\.]
     ((?P<platform>[^-]*)-)?
