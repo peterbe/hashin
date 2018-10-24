@@ -158,12 +158,15 @@ def run_single_package(
         include_prereleases=include_prereleases,
     )
     package = data["package"]
+    # We need to keep this `req` instance for the sake of turning it into a string
+    # the correct way. But, the name might actually be wrong. Suppose the user
+    # asked for "Django" but on PyPI it's actually called "django", then we want
+    # correct that.
+    # We do that by modifying only the `name` part of the `Requirement` instance.
+    req.name = package
 
     maybe_restriction = "" if not restriction else "; {0}".format(restriction)
-    name = package
-    if req.extras:
-        name += "[{0}]".format(",".join(sorted(req.extras)))
-    new_lines = "{0}=={1}{2} \\\n".format(name, data["version"], maybe_restriction)
+    new_lines = "{0}=={1}{2} \\\n".format(req, data["version"], maybe_restriction)
     padding = " " * 4
     for i, release in enumerate(data["hashes"]):
         new_lines += "{0}--hash={1}:{2}".format(padding, algorithm, release["hash"])
