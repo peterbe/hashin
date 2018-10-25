@@ -40,10 +40,8 @@ DEFAULT_ALGORITHM = "sha256"
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "packages",
-    help=(
-        "One or more package specifiers (e.g. some-package or " "some-package==1.2.3)"
-    ),
-    nargs="+",
+    help="One or more package specifiers (e.g. some-package or some-package==1.2.3)",
+    nargs="*",
 )
 parser.add_argument(
     "-r",
@@ -76,6 +74,13 @@ parser.add_argument(
 parser.add_argument(
     "--dry-run",
     help="Don't touch requirements.txt and just show the diff",
+    action="store_true",
+    default=False,
+)
+parser.add_argument(
+    "-u",
+    "--update-all",
+    help="Update all mentioned packages in the requirements file.",
     action="store_true",
     default=False,
 )
@@ -119,12 +124,22 @@ def _download(url, binary=False):
     return r.read().decode(encoding)
 
 
-def run(specs, *args, **kwargs):
+def run(specs, requirements_file, *args, **kwargs):
+    if not specs:  # then, assume all in the requirements file
+        regex = re.compile(r"(^|\n|\n\r).*==")
+        specs = []
+        with open(requirements_file) as f:
+            for line in f:
+                if regex.search(line):
+                    req = Requirement(line.split("\\")[0])
+                    # Deliberately strip the specifier (aka. the version)
+                    req.specifier = None
+                    specs.append(str(req))
     if isinstance(specs, str):
         specs = [specs]
 
     for spec in specs:
-        run_single_package(spec, *args, **kwargs)
+        run_single_package(spec, requirements_file, *args, **kwargs)
     return 0
 
 
@@ -198,12 +213,11 @@ def run_single_package(
 
 
 def amend_requirements_content(requirements, package, new_lines):
-    # if the package wasn't already there, add it to the bottom
     regex = re.compile(
         r"(^|\n|\n\r){0}==|(^|\n|\n\r){0}\[.*\]==".format(re.escape(package)),
         re.IGNORECASE,
     )
-
+    # if the package wasn't already there, add it to the bottom
     if not regex.search(requirements):
         # easy peasy
         if requirements:
@@ -492,6 +506,18 @@ def main():
         return 0
 
     args = parser.parse_args()
+
+    if args.update_all:
+        if args.packages:
+            print(
+                "Can not combine the --update-all option with a list of packages.",
+                file=sys.stderr,
+            )
+            return 2
+    elif not args.packages:
+        print("If you don't use --update-all you must list packages.", file=sys.stderr)
+        parser.print_usage()
+        return 3
 
     try:
         return run(

@@ -27,6 +27,7 @@ def test_everything():
         version=False,
         include_prereleases=False,
         dry_run=True,
+        update_all=False,
     )
     assert args == (expected, [])
 
@@ -55,6 +56,7 @@ def test_everything_long():
         version=False,
         include_prereleases=False,
         dry_run=True,
+        update_all=False,
     )
     assert args == (expected, [])
 
@@ -70,5 +72,6 @@ def test_minimal():
         version=False,
         include_prereleases=False,
         dry_run=False,
+        update_all=False,
     )
     assert args == (expected, [])
