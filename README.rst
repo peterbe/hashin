@@ -252,12 +252,7 @@ put it directly into ``pip``.
 Version History
 ===============
 
-next
-
-  * Support for "extras syntax". E.g. ``hashin "requests[security]"``. Doesn't
-    actually get hashes for ``security`` (in this case, that's not even a
-    package) but allows that syntax into your ``requirements.txt`` file.
-    See https://github.com/peterbe/hashin/issues/70
+0.13.x
 
   * All code is now formatted with `Black <https://pypi.org/project/black/>`_.
 

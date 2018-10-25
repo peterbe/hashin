@@ -6,7 +6,6 @@ See README :)
 from __future__ import print_function
 import argparse
 import cgi
-import difflib
 import tempfile
 import os
 import re
@@ -15,8 +14,8 @@ import json
 from itertools import chain
 
 import pip_api
-from packaging.requirements import Requirement
 from packaging.version import parse
+import difflib
 
 if sys.version_info >= (3,):
     from urllib.request import urlopen
@@ -147,10 +146,8 @@ def run_single_package(
         package, version = spec, None
         # There are other ways to what the latest version is.
 
-    req = Requirement(package)
-
     data = get_package_hashes(
-        package=req.name,
+        package=package,
         version=version,
         verbose=verbose,
         python_versions=python_versions,
@@ -158,15 +155,9 @@ def run_single_package(
         include_prereleases=include_prereleases,
     )
     package = data["package"]
-    # We need to keep this `req` instance for the sake of turning it into a string
-    # the correct way. But, the name might actually be wrong. Suppose the user
-    # asked for "Django" but on PyPI it's actually called "django", then we want
-    # correct that.
-    # We do that by modifying only the `name` part of the `Requirement` instance.
-    req.name = package
 
     maybe_restriction = "" if not restriction else "; {0}".format(restriction)
-    new_lines = "{0}=={1}{2} \\\n".format(req, data["version"], maybe_restriction)
+    new_lines = "{0}=={1}{2} \\\n".format(package, data["version"], maybe_restriction)
     padding = " " * 4
     for i, release in enumerate(data["hashes"]):
         new_lines += "{0}--hash={1}:{2}".format(padding, algorithm, release["hash"])
@@ -199,12 +190,8 @@ def run_single_package(
 
 def amend_requirements_content(requirements, package, new_lines):
     # if the package wasn't already there, add it to the bottom
-    regex = re.compile(
-        r"(^|\n|\n\r){0}==|(^|\n|\n\r){0}\[.*\]==".format(re.escape(package)),
-        re.IGNORECASE,
-    )
-
-    if not regex.search(requirements):
+    regex = "(^|\n|\n\r){0}==".format(re.escape(package))
+    if not re.search(regex, requirements, re.IGNORECASE):
         # easy peasy
         if requirements:
             requirements = requirements.strip() + "\n"
@@ -214,7 +201,7 @@ def amend_requirements_content(requirements, package, new_lines):
         lines = []
         padding = " " * 4
         for line in requirements.splitlines():
-            if regex.search(line):
+            if line.lower().startswith("{0}==".format(package.lower())):
                 lines.append(line)
             elif lines and line.startswith(padding):
                 lines.append(line)
