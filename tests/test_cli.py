@@ -22,6 +22,8 @@ if sys.version_info >= (3,):
 else:  # Python 2
     from StringIO import StringIO
 
+    FileNotFoundError = IOError  # ugly but necessary
+
 
 @contextmanager
 def redirect_stdout(stream):
@@ -664,18 +666,6 @@ selenium==2.53.1 \
         inside the PyPI data."""
 
         def mocked_get(url, **options):
-            # if url == "https://pypi.org/pypi/HASHin/json":
-            #     return _Response(
-            #         "",
-            #         status_code=301,
-            #         headers={"location": "https://pypi.org/pypi/hashin/json"},
-            #     )
-            # elif url == "https://pypi.org/pypi/hashIN/json":
-            #     return _Response(
-            #         "",
-            #         status_code=301,
-            #         headers={"location": "https://pypi.org/pypi/hashin/json"},
-            #     )
             if url == "https://pypi.org/pypi/hashin/json":
                 return _Response(
                     {
