@@ -1,3 +1,4 @@
+import argparse
 import sys
 import json
 import os
@@ -20,6 +21,8 @@ if sys.version_info >= (3,):
     STR_TYPE = str
 else:  # Python 2
     from StringIO import StringIO
+
+    FileNotFoundError = IOError  # ugly but necessary
 
 
 @contextmanager
@@ -187,10 +190,70 @@ class Tests(TestCase):
         # Doesn't matter so much what, just make sure it breaks
         mock_run.side_effect = hashin.PackageError("Some message here")
 
+        def mock_parse_args(*a, **k):
+            return argparse.Namespace(
+                packages=["something"],
+                requirements_file="requirements.txt",
+                algorithm="sha256",
+                python_version="3.8",
+                verbose=False,
+                include_prereleases=False,
+                dry_run=False,
+                update_all=False,
+            )
+
+        mock_parser.parse_args.side_effect = mock_parse_args
+
         error = hashin.main()
         self.assertEqual(error, 1)
         mock_sys.stderr.write.assert_any_call("Some message here")
         mock_sys.stderr.write.assert_any_call("\n")
+
+    @mock.patch("hashin.parser")
+    @mock.patch("hashin.sys")
+    def test_packages_and_update_all(self, mock_sys, mock_parser):
+        def mock_parse_args(*a, **k):
+            return argparse.Namespace(
+                packages=["something"],
+                requirements_file="requirements.txt",
+                algorithm="sha256",
+                python_version="3.8",
+                verbose=False,
+                include_prereleases=False,
+                dry_run=False,
+                update_all=True,  # Note!
+            )
+
+        mock_parser.parse_args.side_effect = mock_parse_args
+
+        error = hashin.main()
+        self.assertEqual(error, 2)
+        mock_sys.stderr.write.assert_any_call(
+            "Can not combine the --update-all option with a list of packages."
+        )
+
+    @mock.patch("hashin.parser")
+    @mock.patch("hashin.sys")
+    def test_no_packages_and_not_update_all(self, mock_sys, mock_parser):
+        def mock_parse_args(*a, **k):
+            return argparse.Namespace(
+                packages=[],  # Note!
+                requirements_file="requirements.txt",
+                algorithm="sha256",
+                python_version="3.8",
+                verbose=False,
+                include_prereleases=False,
+                dry_run=False,
+                update_all=False,
+            )
+
+        mock_parser.parse_args.side_effect = mock_parse_args
+
+        error = hashin.main()
+        self.assertEqual(error, 3)
+        mock_sys.stderr.write.assert_any_call(
+            "If you don't use --update-all you must list packages."
+        )
 
     @mock.patch("hashin.sys")
     def test_main_version(self, mock_sys):
@@ -601,6 +664,178 @@ selenium==2.53.1 \
         """No matter how you run the cli with a package's case typing,
         it should find it and correct the cast typing per what it is
         inside the PyPI data."""
+
+        def mocked_get(url, **options):
+            if url == "https://pypi.org/pypi/hashin/json":
+                return _Response(
+                    {
+                        "info": {"version": "0.11", "name": "hashin"},
+                        "releases": {
+                            "0.11": [
+                                {
+                                    "url": "https://pypi.org/packages/source/p/hashin/hashin-0.11.tar.gz",
+                                    "digests": {"sha256": "bbbbb"},
+                                }
+                            ],
+                            "0.10": [
+                                {
+                                    "url": "https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz",
+                                    "digests": {"sha256": "aaaaa"},
+                                }
+                            ],
+                        },
+                    }
+                )
+            elif url == "https://pypi.org/pypi/hashin/json":
+                return _Response(
+                    {
+                        "info": {"version": "0.11", "name": "hashin"},
+                        "releases": {
+                            "0.11": [
+                                {
+                                    "url": "https://pypi.org/packages/source/p/hashin/hashin-0.11.tar.gz",
+                                    "digests": {"sha256": "bbbbb"},
+                                }
+                            ],
+                            "0.10": [
+                                {
+                                    "url": "https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz",
+                                    "digests": {"sha256": "aaaaa"},
+                                }
+                            ],
+                        },
+                    }
+                )
+            elif url == "https://pypi.org/pypi/requests/json":
+                return _Response(
+                    {
+                        "info": {"version": "1.2.4", "name": "requests"},
+                        "releases": {
+                            "1.2.4": [
+                                {
+                                    "url": "https://pypi.org/packages/source/p/requests/requests-1.2.4.tar.gz",
+                                    "digests": {"sha256": "dededede"},
+                                }
+                            ]
+                        },
+                    }
+                )
+            if url == "https://pypi.org/pypi/enum34/json":
+                return _Response(
+                    {
+                        "info": {"version": "1.1.6", "name": "enum34"},
+                        "releases": {
+                            "1.1.6": [
+                                {
+                                    "has_sig": False,
+                                    "upload_time": "2016-05-16T03:31:13",
+                                    "comment_text": "",
+                                    "python_version": "py2",
+                                    "url": "https://pypi.org/packages/c5/db/enum34-1.1.6-py2-none-any.whl",
+                                    "digests": {
+                                        "md5": "68f6982cc07dde78f4b500db829860bd",
+                                        "sha256": "aaaaa",
+                                    },
+                                    "md5_digest": "68f6982cc07dde78f4b500db829860bd",
+                                    "downloads": 4297423,
+                                    "filename": "enum34-1.1.6-py2-none-any.whl",
+                                    "packagetype": "bdist_wheel",
+                                    "path": "c5/db/enum34-1.1.6-py2-none-any.whl",
+                                    "size": 12427,
+                                },
+                                {
+                                    "has_sig": False,
+                                    "upload_time": "2016-05-16T03:31:19",
+                                    "comment_text": "",
+                                    "python_version": "py3",
+                                    "url": "https://pypi.org/packages/af/42/enum34-1.1.6-py3-none-any.whl",
+                                    "md5_digest": "a63ecb4f0b1b85fb69be64bdea999b43",
+                                    "digests": {
+                                        "md5": "a63ecb4f0b1b85fb69be64bdea999b43",
+                                        "sha256": "bbbbb",
+                                    },
+                                    "downloads": 98598,
+                                    "filename": "enum34-1.1.6-py3-none-any.whl",
+                                    "packagetype": "bdist_wheel",
+                                    "path": "af/42/enum34-1.1.6-py3-none-any.whl",
+                                    "size": 12428,
+                                },
+                                {
+                                    "has_sig": False,
+                                    "upload_time": "2016-05-16T03:31:30",
+                                    "comment_text": "",
+                                    "python_version": "source",
+                                    "url": "https://pypi.org/packages/bf/3e/enum34-1.1.6.tar.gz",
+                                    "md5_digest": "5f13a0841a61f7fc295c514490d120d0",
+                                    "digests": {
+                                        "md5": "5f13a0841a61f7fc295c514490d120d0",
+                                        "sha256": "ccccc",
+                                    },
+                                    "downloads": 188090,
+                                    "filename": "enum34-1.1.6.tar.gz",
+                                    "packagetype": "sdist",
+                                    "path": "bf/3e/enum34-1.1.6.tar.gz",
+                                    "size": 40048,
+                                },
+                                {
+                                    "has_sig": False,
+                                    "upload_time": "2016-05-16T03:31:48",
+                                    "comment_text": "",
+                                    "python_version": "source",
+                                    "url": "https://pypi.org/packages/e8/26/enum34-1.1.6.zip",
+                                    "md5_digest": "61ad7871532d4ce2d77fac2579237a9e",
+                                    "digests": {
+                                        "md5": "61ad7871532d4ce2d77fac2579237a9e",
+                                        "sha256": "dddddd",
+                                    },
+                                    "downloads": 775920,
+                                    "filename": "enum34-1.1.6.zip",
+                                    "packagetype": "sdist",
+                                    "path": "e8/26/enum34-1.1.6.zip",
+                                    "size": 44773,
+                                },
+                            ]
+                        },
+                    }
+                )
+
+            raise NotImplementedError(url)
+
+        murlopen.side_effect = mocked_get
+
+        with tmpfile() as filename:
+            with self.assertRaises(FileNotFoundError):
+                retcode = hashin.run(None, filename, "sha256")
+
+            with open(filename, "w") as f:
+                f.write("# This is comment. Ignore this.\n")
+                f.write("\n")
+                f.write("requests[security]==1.2.3 \\\n")
+                f.write("    --hash=sha256:99dcfdaae\n")
+                f.write("hashin==0.11 \\\n")
+                f.write("    --hash=sha256:a84b8c9ab623\n")
+                f.write("enum34==1.1.5; python_version <= '3.4' \\\n")
+                f.write("    --hash=sha256:12ce5c2ef718\n")
+                f.write("\n")
+
+            retcode = hashin.run(None, filename, "sha256", verbose=True)
+
+            self.assertEqual(retcode, 0)
+            with open(filename) as f:
+                output = f.read()
+
+            self.assertTrue("requests[security]==1.2.3" not in output)
+            self.assertTrue("requests[security]==1.2.4" in output)
+            # This one didn't need to be updated.
+            self.assertTrue("hashin==0.11" in output)
+            self.assertTrue('enum34==1.1.5; python_version <= "3.4"' not in output)
+            self.assertTrue('enum34==1.1.6; python_version <= "3.4"' in output)
+
+    @cleanup_tmpdir("hashin*")
+    @mock.patch("hashin.urlopen")
+    def test_run_update_all(self, murlopen):
+        """The --update-all flag will extra all the names from the existing
+        requirements file, and check with pypi.org if there's a new version."""
 
         def mocked_get(url, **options):
             if url == "https://pypi.org/pypi/HAShin/json":

@@ -254,6 +254,10 @@ Version History
 
 next
 
+  * New flag ``--update-all`` (alias ``-u``) will parse the requirements file,
+    ignore the version, and update all packages that have new versions.
+    See https://github.com/peterbe/hashin/pull/88
+
   * Support for "extras syntax". E.g. ``hashin "requests[security]"``. Doesn't
     actually get hashes for ``security`` (in this case, that's not even a
     package) but allows that syntax into your ``requirements.txt`` file.
