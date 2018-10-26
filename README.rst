@@ -254,6 +254,10 @@ Version History
 
 next
 
+  * In Python 3, if the package can't be found you get a more explicit exception
+    pointing out which package (URL) that failed.
+    See https://github.com/peterbe/hashin/issues/87
+
   * New flag ``--update-all`` (alias ``-u``) will parse the requirements file,
     ignore the version, and update all packages that have new versions.
     See https://github.com/peterbe/hashin/pull/88
