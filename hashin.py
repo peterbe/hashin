@@ -20,6 +20,7 @@ from packaging.version import parse
 
 if sys.version_info >= (3,):
     from urllib.request import urlopen
+    from urllib.error import HTTPError
 else:
     from urllib import urlopen
 
@@ -99,12 +100,23 @@ class NoVersionsError(Exception):
     """When there are no valid versions found."""
 
 
+class PackageNotFoundError(Exception):
+    """When the package can't be found on pypi.org."""
+
+
 def _verbose(*args):
     print("* " + " ".join(args))
 
 
 def _download(url, binary=False):
-    r = urlopen(url)
+    try:
+        r = urlopen(url)
+    except HTTPError as exception:
+        status_code = exception.getcode()
+        if status_code == 404:
+            raise PackageNotFoundError(url)
+        raise PackageError("Download error. {0} on {1}".format(status_code, url))
+
     # Note that urlopen will, by default, follow redirects.
     status_code = r.getcode()
 
@@ -115,8 +127,10 @@ def _download(url, binary=False):
                 "No 'Location' header on {0} ({1})".format(url, status_code)
             )
         return _download(location)
+    elif status_code == 404:
+        raise PackageNotFoundError(url)
     elif status_code != 200:
-        raise PackageError("Package not found. {0} on {1}".format(status_code, url))
+        raise PackageError("Download error. {0} on {1}".format(status_code, url))
     if binary:
         return r.read()
     _, params = cgi.parse_header(r.headers.get("Content-Type", ""))
