@@ -24,9 +24,7 @@ else:  # Python 2
     from StringIO import StringIO
 
     FileNotFoundError = IOError  # ugly but necessary
-
-    # class HTTPError(Exception):
-    #     pass
+    # Python 2 does not have this exception.
     HTTPError = None
 
 
