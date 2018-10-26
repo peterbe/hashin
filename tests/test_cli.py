@@ -17,12 +17,15 @@ import hashin
 if sys.version_info >= (3,):
     # As in, Python 3
     from io import StringIO
+    from urllib.error import HTTPError
 
     STR_TYPE = str
 else:  # Python 2
     from StringIO import StringIO
 
     FileNotFoundError = IOError  # ugly but necessary
+    # Python 2 does not have this exception.
+    HTTPError = None
 
 
 @contextmanager
@@ -1281,6 +1284,39 @@ selenium==2.53.1 \
         }
 
         self.assertEqual(result, expected)
+
+    @cleanup_tmpdir("hashin*")
+    @mock.patch("hashin.urlopen")
+    def test_get_package_hashes_package_not_found(self, murlopen):
+        def mocked_get(url, **options):
+            if url == "https://pypi.org/pypi/gobblygook/json":
+                if HTTPError:
+                    raise HTTPError(url, 404, "Page not found", {}, None)
+                else:
+                    return _Response({}, status_code=404)
+
+            if url == "https://pypi.org/pypi/troublemaker/json":
+                if HTTPError:
+                    raise HTTPError(url, 500, "Something went wrong", {}, None)
+                else:
+                    return _Response({}, status_code=500)
+
+            raise NotImplementedError(url)
+
+        murlopen.side_effect = mocked_get
+
+        with self.assertRaises(hashin.PackageNotFoundError) as cm:
+            hashin.get_package_hashes(
+                package="gobblygook", version="0.10", algorithm="sha256"
+            )
+        exception = cm.exception
+        self.assertEqual(str(exception), "https://pypi.org/pypi/gobblygook/json")
+
+        # Errors left as is if not a 404
+        with self.assertRaises(hashin.PackageError):
+            hashin.get_package_hashes(
+                package="troublemaker", version="0.10", algorithm="sha256"
+            )
 
     @cleanup_tmpdir("hashin*")
     @mock.patch("hashin.urlopen")
