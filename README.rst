@@ -254,6 +254,8 @@ Version History
 
 next
 
+  * (Internal) All tests have been rewritten as plain pytest functions.
+
   * In Python 3, if the package can't be found you get a more explicit exception
     pointing out which package (URL) that failed.
     See https://github.com/peterbe/hashin/issues/87
