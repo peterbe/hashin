@@ -254,6 +254,10 @@ Version History
 
 next
 
+  * Order of hashes should not affect if a package in the requirements file
+    should be replaced or not.
+    See https://github.com/peterbe/hashin/issues/93
+
   * (Internal) All tests have been rewritten as plain pytest functions.
 
   * In Python 3, if the package can't be found you get a more explicit exception
