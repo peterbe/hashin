@@ -304,6 +304,55 @@ autocompeter==1.2.3
     assert result == new_lines[1]
 
 
+def test_amend_requirements_content_actually_not_replacement():
+    requirements = (
+        """
+autocompeter==1.2.2
+    --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
+    --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
+    """.strip()
+        + "\n"
+    )
+
+    new_lines = (
+        "autocompeter",
+        """
+autocompeter==1.2.2
+    --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
+    --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
+    """.strip()
+        + "\n",
+    )
+
+    result = hashin.amend_requirements_content(requirements, [new_lines])
+    # It should be unchanged because the only thing that changed was the
+    # order of the --hash lines.
+    assert result == requirements
+
+
+def test_amend_requirements_content_replacement_addition():
+    requirements = (
+        """
+autocompeter==1.2.2
+    --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
+    """.strip()
+        + "\n"
+    )
+
+    new_lines = (
+        "autocompeter",
+        """
+autocompeter==1.2.2
+    --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
+    --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
+    """.strip()
+        + "\n",
+    )
+
+    result = hashin.amend_requirements_content(requirements, [new_lines])
+    assert result == new_lines[1]
+
+
 def test_amend_requirements_content_replacement_single_to_multi():
     """Change from autocompeter==1.2.2 to autocompeter==1.2.3
     when it was previously written as a single line and now
@@ -512,21 +561,21 @@ def test_run(murlopen, tmpfile, capsys):
         assert output.endswith("\n")
         lines = output.splitlines()
         assert lines[0] == "hashin==0.10 \\"
-        assert lines[1] == (
+        assert (
             "    --hash=sha512:0d63bf4c115154781846ecf573049324f06b021a1"
             "d4b92da4fae2bf491da2b83a13096b14d73e73cefad36855f4fa936bac4"
             "b2357dabf05a2b1e7329ff1e5455 \\"
-        )
-        assert lines[2] == (
+        ) in lines
+        assert (
             "    --hash=sha512:45d1c5d2237a3b4f78b4198709fb2ecf1f781c823"
             "4ce3d94356f2100a36739433952c6c13b2843952f608949e6baa9f95055"
             "a314487cd8fb3f9d76522d8edb50 \\"
-        )
-        assert lines[3] == (
+        ) in lines
+        assert (
             "    --hash=sha512:c32e6d9fb09dc36ab9222c4606a1f43a2dcc183a8"
             "c64bdd9199421ef779072c174fa044b155babb12860cf000e36bc4d3586"
             "94fa22420c997b1dd75b623d4daa"
-        )
+        ) in lines
 
 
 def test_run_atomic_not_write_with_error_on_last_package(murlopen, tmpfile):
@@ -1449,10 +1498,10 @@ def test_get_package_hashes_unknown_algorithm(murlopen, capsys):
         "version": "0.10",
         "hashes": [
             {
-                "hash": "0d63bf4c115154781846ecf573049324f06b021a1d4b92da4fae2bf491da2b83a13096b14d73e73cefad36855f4fa936bac4b2357dabf05a2b1e7329ff1e5455"
+                "hash": "45d1c5d2237a3b4f78b4198709fb2ecf1f781c8234ce3d94356f2100a36739433952c6c13b2843952f608949e6baa9f95055a314487cd8fb3f9d76522d8edb50"
             },
             {
-                "hash": "45d1c5d2237a3b4f78b4198709fb2ecf1f781c8234ce3d94356f2100a36739433952c6c13b2843952f608949e6baa9f95055a314487cd8fb3f9d76522d8edb50"
+                "hash": "0d63bf4c115154781846ecf573049324f06b021a1d4b92da4fae2bf491da2b83a13096b14d73e73cefad36855f4fa936bac4b2357dabf05a2b1e7329ff1e5455"
             },
             {
                 "hash": "c32e6d9fb09dc36ab9222c4606a1f43a2dcc183a8c64bdd9199421ef779072c174fa044b155babb12860cf000e36bc4d358694fa22420c997b1dd75b623d4daa"

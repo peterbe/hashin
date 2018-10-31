@@ -230,9 +230,25 @@ def run_packages(
 
 
 def amend_requirements_content(requirements, all_new_lines):
-
     # I wish we had types!
     assert isinstance(all_new_lines, list), type(all_new_lines)
+
+    padding = " " * 4
+
+    def is_different_lines(package, new_lines):
+        # This assumes that for sure the package is already mentioned in the old
+        # requirements. Now we just need to double-check that they really are
+        # different.
+        # The 'new_lines` is what we might intend to replace it with.
+        lines = set()
+        for line in requirements.splitlines():
+            if regex.search(line):
+                lines.add(line.strip(" \\"))
+            elif lines and line.startswith(padding):
+                lines.add(line.strip(" \\"))
+            elif lines:
+                break
+        return lines != set([x.strip(" \\") for x in new_lines.splitlines()])
 
     for package, new_lines in all_new_lines:
         regex = re.compile(
@@ -245,10 +261,9 @@ def amend_requirements_content(requirements, all_new_lines):
             if requirements:
                 requirements = requirements.strip() + "\n"
             requirements += new_lines.strip() + "\n"
-        else:
+        elif is_different_lines(package, new_lines):
             # need to replace the existing
             lines = []
-            padding = " " * 4
             for line in requirements.splitlines():
                 if regex.search(line):
                     lines.append(line)
@@ -509,11 +524,8 @@ def get_package_hashes(
         else:
             raise PackageError("No releases could be found for {0}".format(version))
 
-    # Sorting them helps make sure the results are more predictable
-    # when running more than once for the same version
-    hashes = sorted(
-        get_releases_hashes(releases=releases, algorithm=algorithm, verbose=verbose),
-        key=lambda x: x["hash"],
+    hashes = list(
+        get_releases_hashes(releases=releases, algorithm=algorithm, verbose=verbose)
     )
     return {"package": package, "version": version, "hashes": hashes}
 
