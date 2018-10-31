@@ -217,14 +217,69 @@ def test_amend_requirements_content_new():
         + "\n"
     )
     new_lines = (
+        "autocompeter",
         """
 autocompeter==1.2.3 \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
     """.strip()
+        + "\n",
+    )
+    result = hashin.amend_requirements_content(requirements, [new_lines])
+    assert result == requirements + new_lines[1]
+
+
+def test_amend_requirements_content_multiple_merge():
+    requirements = (
+        """
+autocompeter==1.2.3 \\
+    --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
+otherpackage==1.0.0 \\
+    --hash=sha256:cHay6ATFKumO3svU3B-8qBMYb-f1_dYlR4OgClWntEI
+# Comment here
+examplepackage==9.8.6 \\
+    --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
+    """.strip()
         + "\n"
     )
-    result = hashin.amend_requirements_content(requirements, "autocompeter", new_lines)
-    assert result == requirements + new_lines
+
+    all_new_lines = []
+    all_new_lines.append(
+        (
+            "autocompeter",
+            """
+autocompeter==1.3.0 \\
+    --hash=sha256:53929418a41295b526fbb68e43bc32fe93c3ef99c030b9e705caf1de486440de
+    """.strip()
+            + "\n",
+        )
+    )
+    all_new_lines.append(
+        (
+            "examplepackage",
+            """
+examplepackage==10.0.0 \\
+    --hash=sha256:fd54e979d3747be638f59de44a7f6523bed56d81961a438462b1346f49be5fe4
+    --hash=sha256:12ce5c2ef718e7e31cef2e2a3bde771d9216f2cb014efba963e69cb709bcbbd1
+    """.strip()
+            + "\n",
+        )
+    )
+
+    result = hashin.amend_requirements_content(requirements, all_new_lines)
+    expect = (
+        """
+autocompeter==1.3.0 \\
+    --hash=sha256:53929418a41295b526fbb68e43bc32fe93c3ef99c030b9e705caf1de486440de
+otherpackage==1.0.0 \\
+    --hash=sha256:cHay6ATFKumO3svU3B-8qBMYb-f1_dYlR4OgClWntEI
+# Comment here
+examplepackage==10.0.0 \\
+    --hash=sha256:fd54e979d3747be638f59de44a7f6523bed56d81961a438462b1346f49be5fe4
+    --hash=sha256:12ce5c2ef718e7e31cef2e2a3bde771d9216f2cb014efba963e69cb709bcbbd1
+    """.strip()
+        + "\n"
+    )
+    assert result == expect
 
 
 def test_amend_requirements_content_replacement():
@@ -235,15 +290,18 @@ autocompeter==1.2.2
     """.strip()
         + "\n"
     )
+
     new_lines = (
+        "autocompeter",
         """
 autocompeter==1.2.3
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
     """.strip()
-        + "\n"
+        + "\n",
     )
-    result = hashin.amend_requirements_content(requirements, "autocompeter", new_lines)
-    assert result == new_lines
+
+    result = hashin.amend_requirements_content(requirements, [new_lines])
+    assert result == new_lines[1]
 
 
 def test_amend_requirements_content_replacement_single_to_multi():
@@ -257,14 +315,15 @@ autocompeter==1.2.2 --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56
         + "\n"
     )
     new_lines = (
+        "autocompeter",
         """
 autocompeter==1.2.3
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
     """.strip()
-        + "\n"
+        + "\n",
     )
-    result = hashin.amend_requirements_content(requirements, "autocompeter", new_lines)
-    assert result == new_lines
+    result = hashin.amend_requirements_content(requirements, [new_lines])
+    assert result == new_lines[1]
 
 
 def test_amend_requirements_content_replacement_2():
@@ -277,14 +336,15 @@ autocompeter==1.2.2 \\
         + "\n"
     )
     new_lines = (
+        "autocompeter",
         """
 autocompeter==1.2.3 \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
     """.strip()
-        + "\n"
+        + "\n",
     )
-    result = hashin.amend_requirements_content(requirements, "autocompeter", new_lines)
-    assert result == new_lines
+    result = hashin.amend_requirements_content(requirements, [new_lines])
+    assert result == new_lines[1]
 
 
 def test_amend_requirements_content_replacement_amonst_others():
@@ -303,12 +363,15 @@ autocompeter==1.2.2 \\
     """.strip()
         + "\n"
     )
-    new_lines = """
+    new_lines = (
+        "autocompeter",
+        """
 autocompeter==1.2.3 \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
-    """.strip()
-    result = hashin.amend_requirements_content(requirements, "autocompeter", new_lines)
-    assert result == previous + new_lines
+    """.strip(),
+    )
+    result = hashin.amend_requirements_content(requirements, [new_lines])
+    assert result == previous + new_lines[1]
 
 
 def test_amend_requirements_content_replacement_amonst_others_2():
@@ -327,12 +390,15 @@ autocompeter==1.2.2
     """.strip()
         + "\n"
     )
-    new_lines = """
+    new_lines = (
+        "autocompeter",
+        """
 autocompeter==1.2.3  \\
     --hash=256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
-    """.strip()
-    result = hashin.amend_requirements_content(requirements, "autocompeter", new_lines)
-    assert result == previous + new_lines
+        """.strip(),
+    )
+    result = hashin.amend_requirements_content(requirements, [new_lines])
+    assert result == previous + new_lines[1]
 
 
 def test_amend_requirements_content_new_similar_name():
@@ -352,17 +418,18 @@ selenium==2.52.0 \
     """.strip()
         + "\n"
     )
-    new_lines = """
+    new_lines = (
+        "selenium",
+        """
 selenium==2.53.1 \
     --hash=sha256:b1af142650ed7025f906349ae0d7ed1f1a1e635e6ce7ac67e2b2f854f9f8fdc1 \
     --hash=sha256:53929418a41295b526fbb68e43bc32fe93c3ef99c030b9e705caf1de486440de
-    """.strip()
-    result = hashin.amend_requirements_content(
-        previous_1 + previous_2, "selenium", new_lines
+        """.strip(),
     )
+    result = hashin.amend_requirements_content(previous_1 + previous_2, [new_lines])
     assert previous_1 in result
     assert previous_2 not in result
-    assert new_lines in result
+    assert new_lines[1] in result
 
 
 def test_run(murlopen, tmpfile, capsys):
@@ -460,6 +527,57 @@ def test_run(murlopen, tmpfile, capsys):
             "c64bdd9199421ef779072c174fa044b155babb12860cf000e36bc4d3586"
             "94fa22420c997b1dd75b623d4daa"
         )
+
+
+def test_run_atomic_not_write_with_error_on_last_package(murlopen, tmpfile):
+    def mocked_get(url, **options):
+
+        if url == "https://pypi.org/pypi/hashin/json":
+            return _Response(
+                {
+                    "info": {"version": "0.10", "name": "hashin"},
+                    "releases": {
+                        "0.10": [
+                            {
+                                "url": "https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl",
+                                "digests": {"sha256": "aaaaa"},
+                            },
+                            {
+                                "url": "https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl",
+                                "digests": {"sha256": "bbbbb"},
+                            },
+                            {
+                                "url": "https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz",
+                                "digests": {"sha256": "ccccc"},
+                            },
+                        ]
+                    },
+                }
+            )
+
+        if url == "https://pypi.org/pypi/gobblygook/json":
+            if HTTPError:
+                raise HTTPError(url, 404, "Page not found", {}, None)
+            else:
+                return _Response({}, status_code=404)
+
+        raise NotImplementedError(url)
+
+    murlopen.side_effect = mocked_get
+
+    with tmpfile() as filename:
+        with open(filename, "w") as f:
+            f.write("")
+
+        with pytest.raises(hashin.PackageNotFoundError):
+            hashin.run(["hashin", "gobblygook"], filename, "sha256", verbose=True)
+
+        with open(filename) as f:
+            output = f.read()
+            # Crucial that nothing was written to the file.
+            # The first package would find some new requirements but the second
+            # package should cancel the write.
+            assert output == ""
 
 
 def test_run_without_specific_version(murlopen, tmpfile):
@@ -863,6 +981,77 @@ def test_run_dry(murlopen, tmpfile, capsys):
     out_lines = captured.out.splitlines()
     assert "+hashin==0.10" in out_lines[3]
     assert "+--hash=sha256:aaaaa" in out_lines[4].replace(" ", "")
+
+
+def test_run_dry_multiple_packages(murlopen, tmpfile, capsys):
+    """dry run should edit the requirements.txt file and print
+    hashes and package name in the console
+    """
+
+    def mocked_get(url, **options):
+        if url == "https://pypi.org/pypi/hashin/json":
+            return _Response(
+                {
+                    "info": {"version": "0.11", "name": "hashin"},
+                    "releases": {
+                        "0.11": [
+                            {
+                                "url": "https://pypi.org/packages/source/p/hashin/hashin-0.11.tar.gz",
+                                "digests": {"sha256": "bbbbb"},
+                            }
+                        ],
+                        "0.10": [
+                            {
+                                "url": "https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz",
+                                "digests": {"sha256": "aaaaa"},
+                            }
+                        ],
+                    },
+                }
+            )
+        if url == "https://pypi.org/pypi/requests/json":
+            return _Response(
+                {
+                    "info": {"version": "1.2.4", "name": "requests"},
+                    "releases": {
+                        "1.2.4": [
+                            {
+                                "url": "https://pypi.org/packages/source/p/requests/requests-1.2.4.tar.gz",
+                                "digests": {"sha256": "dededede"},
+                            }
+                        ]
+                    },
+                }
+            )
+
+        raise NotImplementedError(url)
+
+    murlopen.side_effect = mocked_get
+
+    with tmpfile() as filename:
+        with open(filename, "w") as f:
+            f.write("")
+
+        retcode = hashin.run(
+            ["hashin", "requests"], filename, "sha256", verbose=False, dry_run=True
+        )
+        assert retcode == 0
+
+        # verify that nothing has been written to file
+        with open(filename) as f:
+            output = f.read()
+        assert not output
+
+    # Check dry run output
+    captured = capsys.readouterr()
+    output = captured.out
+    out_lines = output.splitlines()
+    assert output.count("Old") == 1
+    assert output.count("New") == 1
+    assert "+hashin==0.11" in out_lines[3]
+    assert "+--hash=sha256:bbbbb" in out_lines[4].replace(" ", "")
+    assert "+requests==1.2.4" in out_lines[5]
+    assert "+--hash=sha256:dededede" in out_lines[6].replace(" ", "")
 
 
 def test_run_pep_0496(murlopen, tmpfile):
