@@ -152,13 +152,12 @@ def run(specs, requirements_file, *args, **kwargs):
     if isinstance(specs, str):
         specs = [specs]
 
-    for spec in specs:
-        run_single_package(spec, requirements_file, *args, **kwargs)
+    run_packages(specs, requirements_file, *args, **kwargs)
     return 0
 
 
-def run_single_package(
-    spec,
+def run_packages(
+    specs,
     file,
     algorithm,
     python_versions=None,
@@ -166,46 +165,50 @@ def run_single_package(
     include_prereleases=False,
     dry_run=False,
 ):
-    restriction = None
-    if ";" in spec:
-        spec, restriction = [x.strip() for x in spec.split(";", 1)]
-    if "==" in spec:
-        package, version = spec.split("==")
-    else:
-        assert ">" not in spec and "<" not in spec
-        package, version = spec, None
-        # There are other ways to what the latest version is.
+    assert isinstance(specs, list), type(specs)
+    all_new_lines = []
+    for spec in specs:
+        restriction = None
+        if ";" in spec:
+            spec, restriction = [x.strip() for x in spec.split(";", 1)]
+        if "==" in spec:
+            package, version = spec.split("==")
+        else:
+            assert ">" not in spec and "<" not in spec
+            package, version = spec, None
+            # There are other ways to what the latest version is.
 
-    req = Requirement(package)
+        req = Requirement(package)
 
-    data = get_package_hashes(
-        package=req.name,
-        version=version,
-        verbose=verbose,
-        python_versions=python_versions,
-        algorithm=algorithm,
-        include_prereleases=include_prereleases,
-    )
-    package = data["package"]
-    # We need to keep this `req` instance for the sake of turning it into a string
-    # the correct way. But, the name might actually be wrong. Suppose the user
-    # asked for "Django" but on PyPI it's actually called "django", then we want
-    # correct that.
-    # We do that by modifying only the `name` part of the `Requirement` instance.
-    req.name = package
+        data = get_package_hashes(
+            package=req.name,
+            version=version,
+            verbose=verbose,
+            python_versions=python_versions,
+            algorithm=algorithm,
+            include_prereleases=include_prereleases,
+        )
+        package = data["package"]
+        # We need to keep this `req` instance for the sake of turning it into a string
+        # the correct way. But, the name might actually be wrong. Suppose the user
+        # asked for "Django" but on PyPI it's actually called "django", then we want
+        # correct that.
+        # We do that by modifying only the `name` part of the `Requirement` instance.
+        req.name = package
 
-    maybe_restriction = "" if not restriction else "; {0}".format(restriction)
-    new_lines = "{0}=={1}{2} \\\n".format(req, data["version"], maybe_restriction)
-    padding = " " * 4
-    for i, release in enumerate(data["hashes"]):
-        new_lines += "{0}--hash={1}:{2}".format(padding, algorithm, release["hash"])
-        if i != len(data["hashes"]) - 1:
-            new_lines += " \\"
-        new_lines += "\n"
+        maybe_restriction = "" if not restriction else "; {0}".format(restriction)
+        new_lines = "{0}=={1}{2} \\\n".format(req, data["version"], maybe_restriction)
+        padding = " " * 4
+        for i, release in enumerate(data["hashes"]):
+            new_lines += "{0}--hash={1}:{2}".format(padding, algorithm, release["hash"])
+            if i != len(data["hashes"]) - 1:
+                new_lines += " \\"
+            new_lines += "\n"
+        all_new_lines.append((package, new_lines))
 
     with open(file) as f:
         old_requirements = f.read()
-    requirements = amend_requirements_content(old_requirements, package, new_lines)
+    requirements = amend_requirements_content(old_requirements, all_new_lines)
     if dry_run:
         if verbose:
             _verbose("Dry run, not editing ", file)
@@ -226,30 +229,35 @@ def run_single_package(
             _verbose("Editing", file)
 
 
-def amend_requirements_content(requirements, package, new_lines):
-    regex = re.compile(
-        r"(^|\n|\n\r){0}==|(^|\n|\n\r){0}\[.*\]==".format(re.escape(package)),
-        re.IGNORECASE,
-    )
-    # if the package wasn't already there, add it to the bottom
-    if not regex.search(requirements):
-        # easy peasy
-        if requirements:
-            requirements = requirements.strip() + "\n"
-        requirements += new_lines.strip() + "\n"
-    else:
-        # need to replace the existing
-        lines = []
-        padding = " " * 4
-        for line in requirements.splitlines():
-            if regex.search(line):
-                lines.append(line)
-            elif lines and line.startswith(padding):
-                lines.append(line)
-            elif lines:
-                break
-        combined = "\n".join(lines + [""])
-        requirements = requirements.replace(combined, new_lines)
+def amend_requirements_content(requirements, all_new_lines):
+
+    # I wish we had types!
+    assert isinstance(all_new_lines, list), type(all_new_lines)
+
+    for package, new_lines in all_new_lines:
+        regex = re.compile(
+            r"(^|\n|\n\r){0}==|(^|\n|\n\r){0}\[.*\]==".format(re.escape(package)),
+            re.IGNORECASE,
+        )
+        # if the package wasn't already there, add it to the bottom
+        if not regex.search(requirements):
+            # easy peasy
+            if requirements:
+                requirements = requirements.strip() + "\n"
+            requirements += new_lines.strip() + "\n"
+        else:
+            # need to replace the existing
+            lines = []
+            padding = " " * 4
+            for line in requirements.splitlines():
+                if regex.search(line):
+                    lines.append(line)
+                elif lines and line.startswith(padding):
+                    lines.append(line)
+                elif lines:
+                    break
+            combined = "\n".join(lines + [""])
+            requirements = requirements.replace(combined, new_lines)
 
     return requirements
 
