@@ -107,7 +107,7 @@ def run(specs, requirements_file, *args, **kwargs):
                     version = req.specifier
                     req.specifier = None
                     specs.append(str(req))
-                    previous_versions[str(req).split(";")[0]] = version
+                    previous_versions[str(req).split(";")[0].lower()] = version
         kwargs["previous_versions"] = previous_versions
 
     if isinstance(specs, str):
@@ -161,10 +161,10 @@ def run_packages(
 
         new_version_specifier = SpecifierSet("=={}".format(data["version"]))
 
-        if previous_versions and previous_versions.get(str(req)):
+        if previous_versions and previous_versions.get(str(req).lower()):
             # We have some form of previous version and a new version.
             # If they' already equal, just skip this one.
-            if previous_versions[str(req)] == new_version_specifier:
+            if previous_versions[str(req).lower()] == new_version_specifier:
                 continue
 
         if interactive:

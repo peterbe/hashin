@@ -1042,6 +1042,81 @@ enum34==1.1.6; python_version <= "3.4" \\
         assert len(questions) == 2
 
 
+def test_run_interactive_case_insensitive(murlopen, tmpfile, capsys):
+    """This test tests if you had a requirements file with packages spelled
+    with the name with the wrong case."""
+
+    def mocked_get(url, **options):
+
+        if url == "https://pypi.org/pypi/Hashin/json":
+            return _Response(
+                "",
+                status_code=301,
+                headers={"location": "https://pypi.org/pypi/hashin/json"},
+            )
+
+        if url == "https://pypi.org/pypi/hashin/json":
+            return _Response(
+                {
+                    "info": {"version": "0.10", "name": "hashin"},
+                    "releases": {
+                        "0.10": [
+                            {
+                                "url": "https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl",
+                                "digests": {"sha256": "aaaaa"},
+                            },
+                            {
+                                "url": "https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl",
+                                "digests": {"sha256": "bbbbb"},
+                            },
+                            {
+                                "url": "https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz",
+                                "digests": {"sha256": "ccccc"},
+                            },
+                        ]
+                    },
+                }
+            )
+
+        raise NotImplementedError(url)
+
+    murlopen.side_effect = mocked_get
+
+    with tmpfile() as filename:
+        before = (
+            """
+Hashin==0.9 \\
+    --hash=sha256:12ce5c2ef718
+        """.strip()
+            + "\n"
+        )
+        with open(filename, "w") as f:
+            f.write(before)
+
+        with open(filename) as f:
+            output = f.read()
+            assert output == before
+
+        with mock.patch("hashin.input", return_value="Y"):
+            retcode = hashin.run(None, filename, "sha256", interactive=True)
+        assert retcode == 0
+
+        # The expected output is that only "requests[security]" and "enum34"
+        # get updated.
+        expected = (
+            """
+hashin==0.10 \\
+    --hash=sha256:aaaaa \\
+    --hash=sha256:bbbbb \\
+    --hash=sha256:ccccc
+        """.strip()
+            + "\n"
+        )
+        with open(filename) as f:
+            output = f.read()
+            assert output == expected
+
+
 def test_run_without_specific_version(murlopen, tmpfile):
     def mocked_get(url, **options):
         if url == "https://pypi.org/pypi/hashin/json":
