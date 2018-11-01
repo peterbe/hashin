@@ -75,7 +75,6 @@ def _download(url, binary=False):
 
     # Note that urlopen will, by default, follow redirects.
     status_code = r.getcode()
-
     if 301 <= status_code < 400:
         location, _ = cgi.parse_header(r.headers.get("location", ""))
         if not location:
@@ -168,10 +167,11 @@ def run_packages(
                 continue
 
         if interactive:
+            print("PREVIOUS_VERSIONS", previous_versions)
             try:
                 if not interactive_upgrade_request(
                     package,
-                    previous_versions[str(req)],
+                    previous_versions[str(req).lower()],
                     new_version_specifier,
                     print_header=first_interactive,
                 ):

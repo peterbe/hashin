@@ -1078,6 +1078,23 @@ def test_run_interactive_case_insensitive(murlopen, tmpfile, capsys):
                 }
             )
 
+        if url == "https://pypi.org/pypi/Django/json":
+            return _Response(
+                {
+                    "info": {"version": "2.1.3", "name": "Django"},
+                    "releases": {
+                        "2.1.3": [
+                            {
+                                "url": "https://files.pythonhosted.org/packages/d1/e5/2676/Django-2.1.3-py3-none-any.whl",
+                                "digests": {
+                                    "sha256": "dd46d87af4c1bf54f4c926c3cfa41dc2b5c15782f15e4329752ce65f5dad1c37"
+                                },
+                            }
+                        ]
+                    },
+                }
+            )
+
         raise NotImplementedError(url)
 
     murlopen.side_effect = mocked_get
@@ -1085,6 +1102,9 @@ def test_run_interactive_case_insensitive(murlopen, tmpfile, capsys):
     with tmpfile() as filename:
         before = (
             """
+Django==2.1.2 \\
+    --hash=sha256:efbcad7ebb47daafbcead109b38a5bd519a3c3cd92c6ed0f691ff97fcdd16b45
+
 Hashin==0.9 \\
     --hash=sha256:12ce5c2ef718
         """.strip()
@@ -1105,6 +1125,9 @@ Hashin==0.9 \\
         # get updated.
         expected = (
             """
+Django==2.1.3 \\
+    --hash=sha256:dd46d87af4c1bf54f4c926c3cfa41dc2b5c15782f15e4329752ce65f5dad1c37
+
 hashin==0.10 \\
     --hash=sha256:aaaaa \\
     --hash=sha256:bbbbb \\
