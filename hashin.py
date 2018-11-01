@@ -167,7 +167,6 @@ def run_packages(
                 continue
 
         if interactive:
-            print("PREVIOUS_VERSIONS", previous_versions)
             try:
                 if not interactive_upgrade_request(
                     package,
