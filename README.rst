@@ -210,7 +210,7 @@ To run the tests with test coverage, with ``pytest`` run something like
 this::
 
     $ pip install pytest-cover
-    $ pytest --cov hashin --cov-report html tests
+    $ pytest --cov=hashin --cov-report=html
     $ open htmlcov/index.html
 
 
@@ -253,6 +253,11 @@ Version History
 ===============
 
 next
+
+  * ``--interactive`` (when you use ``--update-all``) will iterate over all outdated
+    versions in your requirements file and ask, for each one, if you want to
+    updated it.
+    See https://github.com/peterbe/hashin/issues/90
 
   * Order of hashes should not affect if a package in the requirements file
     should be replaced or not.

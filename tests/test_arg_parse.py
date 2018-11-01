@@ -1,10 +1,10 @@
 import argparse
 
-from hashin import parser
+from hashin import get_parser
 
 
 def test_everything():
-    args = parser.parse_known_args(
+    args = get_parser().parse_known_args(
         [
             "example",
             "another-example",
@@ -28,12 +28,13 @@ def test_everything():
         include_prereleases=False,
         dry_run=True,
         update_all=False,
+        interactive=False,
     )
     assert args == (expected, [])
 
 
 def test_everything_long():
-    args = parser.parse_known_args(
+    args = get_parser().parse_known_args(
         [
             "example",
             "another-example",
@@ -57,12 +58,13 @@ def test_everything_long():
         include_prereleases=False,
         dry_run=True,
         update_all=False,
+        interactive=False,
     )
     assert args == (expected, [])
 
 
 def test_minimal():
-    args = parser.parse_known_args(["example"])
+    args = get_parser().parse_known_args(["example"])
     expected = argparse.Namespace(
         algorithm="sha256",
         packages=["example"],
@@ -73,5 +75,6 @@ def test_minimal():
         include_prereleases=False,
         dry_run=False,
         update_all=False,
+        interactive=False,
     )
     assert args == (expected, [])
