@@ -313,6 +313,8 @@ def interactive_upgrade_request(
             return "NO"
         if answer == "a":
             clear_line()
+            clear_line()
+            print_line(True)
             return "ALL"
         if answer == "q":
             return "QUIT"
