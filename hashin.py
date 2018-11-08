@@ -106,7 +106,7 @@ def run(specs, requirements_file, *args, **kwargs):
                     version = req.specifier
                     req.specifier = None
                     specs.append(str(req))
-                    previous_versions[str(req).split(";")[0].lower()] = version
+                    previous_versions[str(req)] = version
         kwargs["previous_versions"] = previous_versions
 
     if isinstance(specs, str):
@@ -129,6 +129,7 @@ def run_packages(
     assert isinstance(specs, list), type(specs)
     all_new_lines = []
     first_interactive = True
+    yes_to_all = False
     for spec in specs:
         restriction = None
         if ";" in spec:
@@ -139,6 +140,16 @@ def run_packages(
             assert ">" not in spec and "<" not in spec
             package, version = spec, None
             # There are other ways to what the latest version is.
+
+        # It's important to keep a track of what the package was called before
+        # so that if we have to amend the requirements file, we know what to
+        # look for before.
+        previous_name = package
+
+        # The 'previous_versions' dict is based on the old names. So figure
+        # out what the previous version was *before* the new/"correct" name
+        # is figured out.
+        previous_version = previous_versions.get(package) if previous_versions else None
 
         req = Requirement(package)
 
@@ -158,28 +169,42 @@ def run_packages(
         # We do that by modifying only the `name` part of the `Requirement` instance.
         req.name = package
 
+        if previous_versions is None:
+            # Need to be smart here. It's a little counter-intuitive.
+            # If no previous_versions was supplied that has an implied the fact;
+            # the user was explicit about what they want to install.
+            # The name it was called in the old requirements file doesn't matter.
+            previous_name = package
+
         new_version_specifier = SpecifierSet("=={}".format(data["version"]))
 
-        if previous_versions and previous_versions.get(str(req).lower()):
+        if previous_version:
             # We have some form of previous version and a new version.
             # If they' already equal, just skip this one.
-            if previous_versions[str(req).lower()] == new_version_specifier:
+            if previous_version == new_version_specifier:
                 continue
 
         if interactive:
             try:
-                if not interactive_upgrade_request(
+                response = interactive_upgrade_request(
                     package,
-                    previous_versions[str(req).lower()],
+                    previous_version,
                     new_version_specifier,
                     print_header=first_interactive,
-                ):
-                    first_interactive = False
-                    continue
+                    force_yes=yes_to_all,
+                )
                 first_interactive = False
-            except InteractiveAll:
-                interactive = False
-            except (InteractiveQuit, KeyboardInterrupt):
+                if response == "NO":
+                    continue
+                elif response == "ALL":
+                    # If you ever answer "all" to the update question, we don't want
+                    # stop showing the interactive prompt but we don't need to
+                    # ask any questions any more. This way, you get to see the
+                    # upgrades that are going to happen.
+                    yes_to_all = True
+                elif response == "QUIT":
+                    return 1
+            except KeyboardInterrupt:
                 return 1
 
         maybe_restriction = "" if not restriction else "; {0}".format(restriction)
@@ -190,7 +215,7 @@ def run_packages(
             if i != len(data["hashes"]) - 1:
                 new_lines += " \\"
             new_lines += "\n"
-        all_new_lines.append((package, new_lines))
+        all_new_lines.append((package, previous_name, new_lines))
 
     if not all_new_lines:
         # This can happen if you use 'interactive' and said no to everything or
@@ -222,15 +247,9 @@ def run_packages(
     return 0
 
 
-class InteractiveAll(Exception):
-    """When the user wants to say yes to ALL package updates."""
-
-
-class InteractiveQuit(Exception):
-    """When the user wants to stop the interactive update questions entirely."""
-
-
-def interactive_upgrade_request(package, old_version, new_version, print_header=False):
+def interactive_upgrade_request(
+    package, old_version, new_version, print_header=False, force_yes=False
+):
     def print_version(v):
         return str(v).replace("==", "").ljust(15)
 
@@ -255,29 +274,56 @@ def interactive_upgrade_request(package, old_version, new_version, print_header=
             checkboxed,
         )
 
-    print_line()
+    if force_yes:
+        print_line(True)
+        return "YES"
+    else:
+        print_line()
+
+    printed_help = []
+
+    def print_help():
+        print(
+            "y - Include this update (default)\n"
+            "n - Skip this update\n"
+            "a - Include this and all following upgrades\n"
+            "q - Skip this and all following upgrades\n"
+            "? - Print this help\n"
+        )
+        printed_help.append(1)
 
     def clear_line():
         sys.stdout.write("\033[F")  # Cursor up one line
         sys.stdout.write("\033[K")  # Clear to the end of line
 
     def ask():
-        answer = input("Update? [Y/n/a/q]: ").lower().strip()
+        answer = input("Update? [Y/n/a/q/?]: ").lower().strip()
+        if printed_help:
+            # Because the print_help() prints 5 lines to stdout.
+            # Plus 2 because of the original question line and the extra blank line.
+            for i in range(5 + 2):
+                clear_line()
+            # printed_help.clear()
+            del printed_help[:]
+
         if answer == "n":
             clear_line()
             clear_line()
             print_line(False)
-            return False
+            return "NO"
         if answer == "a":
             clear_line()
-            raise InteractiveAll
+            return "ALL"
         if answer == "q":
-            raise InteractiveQuit
+            return "QUIT"
         if answer == "y" or answer == "" or answer == "yes":
             clear_line()
             clear_line()
             print_line(True)
-            return True
+            return "YES"
+        if answer == "?":
+            print_help()
+
         return ask()
 
     return ask()
@@ -304,9 +350,9 @@ def amend_requirements_content(requirements, all_new_lines):
                 break
         return lines != set([x.strip(" \\") for x in new_lines.splitlines()])
 
-    for package, new_lines in all_new_lines:
+    for package, old_name, new_lines in all_new_lines:
         regex = re.compile(
-            r"(^|\n|\n\r){0}==|(^|\n|\n\r){0}\[.*\]==".format(re.escape(package)),
+            r"(^|\n|\n\r){0}==|(^|\n|\n\r){0}\[.*\]==".format(re.escape(old_name)),
             re.IGNORECASE,
         )
         # if the package wasn't already there, add it to the bottom

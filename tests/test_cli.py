@@ -248,6 +248,7 @@ def test_amend_requirements_content_new():
     )
     new_lines = (
         "autocompeter",
+        "autocompeter",
         """
 autocompeter==1.2.3 \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
@@ -255,7 +256,29 @@ autocompeter==1.2.3 \\
         + "\n",
     )
     result = hashin.amend_requirements_content(requirements, [new_lines])
-    assert result == requirements + new_lines[1]
+    assert result == requirements + new_lines[2]
+
+
+def test_amend_requirements_different_old_name():
+    requirements = (
+        """
+Discogs_client==1.0 \\
+    --hash=sha256:a326d1ab81164b36e7befe8e940048c4bdd79e0f78afc5f59037e0e9b1de46d4
+
+    """.strip()
+        + "\n"
+    )
+    new_lines = (
+        "discogs-client",
+        "Discogs_client",
+        """
+discogs-client==1.1 \\
+    --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
+    """.strip()
+        + "\n",
+    )
+    result = hashin.amend_requirements_content(requirements, [new_lines])
+    assert result == new_lines[2]
 
 
 def test_amend_requirements_content_multiple_merge():
@@ -276,6 +299,7 @@ examplepackage==9.8.6 \\
     all_new_lines.append(
         (
             "autocompeter",
+            "autocompeter",
             """
 autocompeter==1.3.0 \\
     --hash=sha256:53929418a41295b526fbb68e43bc32fe93c3ef99c030b9e705caf1de486440de
@@ -285,6 +309,7 @@ autocompeter==1.3.0 \\
     )
     all_new_lines.append(
         (
+            "examplepackage",
             "examplepackage",
             """
 examplepackage==10.0.0 \\
@@ -323,6 +348,7 @@ autocompeter==1.2.2
 
     new_lines = (
         "autocompeter",
+        "autocompeter",
         """
 autocompeter==1.2.3
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
@@ -331,7 +357,7 @@ autocompeter==1.2.3
     )
 
     result = hashin.amend_requirements_content(requirements, [new_lines])
-    assert result == new_lines[1]
+    assert result == new_lines[2]
 
 
 def test_amend_requirements_content_actually_not_replacement():
@@ -345,6 +371,7 @@ autocompeter==1.2.2
     )
 
     new_lines = (
+        "autocompeter",
         "autocompeter",
         """
 autocompeter==1.2.2
@@ -371,6 +398,7 @@ autocompeter==1.2.2
 
     new_lines = (
         "autocompeter",
+        "autocompeter",
         """
 autocompeter==1.2.2
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
@@ -380,7 +408,7 @@ autocompeter==1.2.2
     )
 
     result = hashin.amend_requirements_content(requirements, [new_lines])
-    assert result == new_lines[1]
+    assert result == new_lines[2]
 
 
 def test_amend_requirements_content_replacement_single_to_multi():
@@ -395,6 +423,7 @@ autocompeter==1.2.2 --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56
     )
     new_lines = (
         "autocompeter",
+        "autocompeter",
         """
 autocompeter==1.2.3
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
@@ -402,7 +431,7 @@ autocompeter==1.2.3
         + "\n",
     )
     result = hashin.amend_requirements_content(requirements, [new_lines])
-    assert result == new_lines[1]
+    assert result == new_lines[2]
 
 
 def test_amend_requirements_content_replacement_2():
@@ -416,6 +445,7 @@ autocompeter==1.2.2 \\
     )
     new_lines = (
         "autocompeter",
+        "autocompeter",
         """
 autocompeter==1.2.3 \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
@@ -423,7 +453,7 @@ autocompeter==1.2.3 \\
         + "\n",
     )
     result = hashin.amend_requirements_content(requirements, [new_lines])
-    assert result == new_lines[1]
+    assert result == new_lines[2]
 
 
 def test_amend_requirements_content_replacement_amonst_others():
@@ -444,13 +474,14 @@ autocompeter==1.2.2 \\
     )
     new_lines = (
         "autocompeter",
+        "autocompeter",
         """
 autocompeter==1.2.3 \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
     """.strip(),
     )
     result = hashin.amend_requirements_content(requirements, [new_lines])
-    assert result == previous + new_lines[1]
+    assert result == previous + new_lines[2]
 
 
 def test_amend_requirements_content_replacement_amonst_others_2():
@@ -471,13 +502,14 @@ autocompeter==1.2.2
     )
     new_lines = (
         "autocompeter",
+        "autocompeter",
         """
 autocompeter==1.2.3  \\
     --hash=256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
         """.strip(),
     )
     result = hashin.amend_requirements_content(requirements, [new_lines])
-    assert result == previous + new_lines[1]
+    assert result == previous + new_lines[2]
 
 
 def test_amend_requirements_content_new_similar_name():
@@ -499,6 +531,7 @@ selenium==2.52.0 \
     )
     new_lines = (
         "selenium",
+        "selenium",
         """
 selenium==2.53.1 \
     --hash=sha256:b1af142650ed7025f906349ae0d7ed1f1a1e635e6ce7ac67e2b2f854f9f8fdc1 \
@@ -508,7 +541,7 @@ selenium==2.53.1 \
     result = hashin.amend_requirements_content(previous_1 + previous_2, [new_lines])
     assert previous_1 in result
     assert previous_2 not in result
-    assert new_lines[1] in result
+    assert new_lines[2] in result
 
 
 def test_run(murlopen, tmpfile, capsys):
@@ -1042,13 +1075,15 @@ enum34==1.1.6; python_version <= "3.4" \\
         assert len(questions) == 2
 
 
-def test_run_interactive_case_insensitive(murlopen, tmpfile, capsys):
+def test_run_interactive_case_redirect(murlopen, tmpfile, capsys):
     """This test tests if you had a requirements file with packages spelled
-    with the name with the wrong case."""
+    with a different name."""
 
     def mocked_get(url, **options):
 
-        if url == "https://pypi.org/pypi/Hashin/json":
+        # Note that the name "Hash-in" redirects to a name that is not only
+        # different case, it's also spelled totally differently.
+        if url == "https://pypi.org/pypi/Hash-in/json":
             return _Response(
                 "",
                 status_code=301,
@@ -1105,7 +1140,7 @@ def test_run_interactive_case_insensitive(murlopen, tmpfile, capsys):
 Django==2.1.2 \\
     --hash=sha256:efbcad7ebb47daafbcead109b38a5bd519a3c3cd92c6ed0f691ff97fcdd16b45
 
-Hashin==0.9 \\
+Hash-in==0.9 \\
     --hash=sha256:12ce5c2ef718
         """.strip()
             + "\n"
@@ -2265,9 +2300,10 @@ def test_interactive_upgrade_request(capsys):
     new_version = new.specifier
 
     with mock.patch("hashin.input", return_value="Y "):
-        assert hashin.interactive_upgrade_request(
+        result = hashin.interactive_upgrade_request(
             "hashin", old_version, new_version, print_header=True
         )
+        assert result == "YES"
 
     captured = capsys.readouterr()
     assert "PACKAGE" in captured.out
@@ -2278,9 +2314,8 @@ def test_interactive_upgrade_request(capsys):
 
     # This time, say no.
     with mock.patch("hashin.input", return_value="N"):
-        assert not hashin.interactive_upgrade_request(
-            "hashin", old_version, new_version
-        )
+        result = hashin.interactive_upgrade_request("hashin", old_version, new_version)
+        assert result == "NO"
 
     captured = capsys.readouterr()
     assert "PACKAGE" not in captured.out
@@ -2291,8 +2326,8 @@ def test_interactive_upgrade_request(capsys):
 
     # This time, say yes to everything.
     with mock.patch("hashin.input", return_value="A"):
-        with pytest.raises(hashin.InteractiveAll):
-            hashin.interactive_upgrade_request("hashin", old_version, new_version)
+        result = hashin.interactive_upgrade_request("hashin", old_version, new_version)
+        assert result == "ALL"
 
     captured = capsys.readouterr()
     assert "hashin " in captured.out
@@ -2300,8 +2335,8 @@ def test_interactive_upgrade_request(capsys):
     # This time, quit it.
     # This time, say yes to everything.
     with mock.patch("hashin.input", return_value="q "):
-        with pytest.raises(hashin.InteractiveQuit):
-            hashin.interactive_upgrade_request("hashin", old_version, new_version)
+        result = hashin.interactive_upgrade_request("hashin", old_version, new_version)
+        assert result == "QUIT"
 
     captured = capsys.readouterr()
     assert "hashin " in captured.out
@@ -2327,4 +2362,44 @@ def test_interactive_upgrade_request_repeat_question(capsys):
 
     with mock.patch("hashin.input") as mocked_input:
         mocked_input.side_effect = mock_input
-        assert hashin.interactive_upgrade_request("hashin", old_version, new_version)
+        result = hashin.interactive_upgrade_request("hashin", old_version, new_version)
+        assert result == "YES"
+
+
+def test_interactive_upgrade_request_help(capsys):
+    old = Requirement("hashin==0.9")
+    old_version = old.specifier
+    new = Requirement("hashin==0.10")
+    new_version = new.specifier
+
+    questions = []
+
+    def mock_input(question):
+        questions.append(question)
+        if len(questions) == 1:
+            return "?"
+        elif len(questions) == 2:
+            return "Y"
+        raise NotImplementedError(questions)
+
+    with mock.patch("hashin.input") as mocked_input:
+        mocked_input.side_effect = mock_input
+        result = hashin.interactive_upgrade_request("hashin", old_version, new_version)
+        assert result == "YES"
+
+
+def test_interactive_upgrade_request_force_yes(capsys):
+    old = Requirement("hashin==0.9")
+    old_version = old.specifier
+    new = Requirement("hashin==0.10")
+    new_version = new.specifier
+
+    def mock_input(question):
+        raise AssertionError("Shouldn't ask any questions")
+
+    with mock.patch("hashin.input") as mocked_input:
+        mocked_input.side_effect = mock_input
+        result = hashin.interactive_upgrade_request(
+            "hashin", old_version, new_version, force_yes=True
+        )
+        assert result == "YES"
