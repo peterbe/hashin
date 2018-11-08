@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 See README :)
 """
@@ -16,6 +18,7 @@ from itertools import chain
 
 import pip_api
 from packaging.requirements import Requirement
+from packaging.specifiers import SpecifierSet
 from packaging.version import parse
 
 if sys.version_info >= (3,):
@@ -23,6 +26,8 @@ if sys.version_info >= (3,):
     from urllib.error import HTTPError
 else:
     from urllib import urlopen
+
+    input = raw_input  # noqa
 
     if sys.version_info < (2, 7, 9):
         import warnings
@@ -37,55 +42,6 @@ else:
         )
 
 DEFAULT_ALGORITHM = "sha256"
-
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "packages",
-    help="One or more package specifiers (e.g. some-package or some-package==1.2.3)",
-    nargs="*",
-)
-parser.add_argument(
-    "-r",
-    "--requirements-file",
-    help="requirements file to write to (default requirements.txt)",
-    default="requirements.txt",
-)
-parser.add_argument(
-    "-a",
-    "--algorithm",
-    help="The hash algorithm to use: one of sha256, sha384, sha512",
-    default=DEFAULT_ALGORITHM,
-)
-parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true")
-parser.add_argument(
-    "--include-prereleases",
-    help="Include pre-releases (off by default)",
-    action="store_true",
-)
-parser.add_argument(
-    "-p",
-    "--python-version",
-    help="Python version to add wheels for. May be used multiple times.",
-    action="append",
-    default=[],
-)
-parser.add_argument(
-    "--version", help="Version of hashin", action="store_true", default=False
-)
-parser.add_argument(
-    "--dry-run",
-    help="Don't touch requirements.txt and just show the diff",
-    action="store_true",
-    default=False,
-)
-parser.add_argument(
-    "-u",
-    "--update-all",
-    help="Update all mentioned packages in the requirements file.",
-    action="store_true",
-    default=False,
-)
-
 
 major_pip_version = int(pip_api.version().split(".")[0])
 if major_pip_version < 8:
@@ -119,7 +75,6 @@ def _download(url, binary=False):
 
     # Note that urlopen will, by default, follow redirects.
     status_code = r.getcode()
-
     if 301 <= status_code < 400:
         location, _ = cgi.parse_header(r.headers.get("location", ""))
         if not location:
@@ -142,18 +97,22 @@ def run(specs, requirements_file, *args, **kwargs):
     if not specs:  # then, assume all in the requirements file
         regex = re.compile(r"(^|\n|\n\r).*==")
         specs = []
+        previous_versions = {}
         with open(requirements_file) as f:
             for line in f:
                 if regex.search(line):
                     req = Requirement(line.split("\\")[0])
                     # Deliberately strip the specifier (aka. the version)
+                    version = req.specifier
                     req.specifier = None
                     specs.append(str(req))
+                    previous_versions[str(req)] = version
+        kwargs["previous_versions"] = previous_versions
+
     if isinstance(specs, str):
         specs = [specs]
 
-    run_packages(specs, requirements_file, *args, **kwargs)
-    return 0
+    return run_packages(specs, requirements_file, *args, **kwargs)
 
 
 def run_packages(
@@ -164,9 +123,13 @@ def run_packages(
     verbose=False,
     include_prereleases=False,
     dry_run=False,
+    previous_versions=None,
+    interactive=False,
 ):
     assert isinstance(specs, list), type(specs)
     all_new_lines = []
+    first_interactive = True
+    yes_to_all = False
     for spec in specs:
         restriction = None
         if ";" in spec:
@@ -177,6 +140,16 @@ def run_packages(
             assert ">" not in spec and "<" not in spec
             package, version = spec, None
             # There are other ways to what the latest version is.
+
+        # It's important to keep a track of what the package was called before
+        # so that if we have to amend the requirements file, we know what to
+        # look for before.
+        previous_name = package
+
+        # The 'previous_versions' dict is based on the old names. So figure
+        # out what the previous version was *before* the new/"correct" name
+        # is figured out.
+        previous_version = previous_versions.get(package) if previous_versions else None
 
         req = Requirement(package)
 
@@ -196,6 +169,44 @@ def run_packages(
         # We do that by modifying only the `name` part of the `Requirement` instance.
         req.name = package
 
+        if previous_versions is None:
+            # Need to be smart here. It's a little counter-intuitive.
+            # If no previous_versions was supplied that has an implied the fact;
+            # the user was explicit about what they want to install.
+            # The name it was called in the old requirements file doesn't matter.
+            previous_name = package
+
+        new_version_specifier = SpecifierSet("=={}".format(data["version"]))
+
+        if previous_version:
+            # We have some form of previous version and a new version.
+            # If they' already equal, just skip this one.
+            if previous_version == new_version_specifier:
+                continue
+
+        if interactive:
+            try:
+                response = interactive_upgrade_request(
+                    package,
+                    previous_version,
+                    new_version_specifier,
+                    print_header=first_interactive,
+                    force_yes=yes_to_all,
+                )
+                first_interactive = False
+                if response == "NO":
+                    continue
+                elif response == "ALL":
+                    # If you ever answer "all" to the update question, we don't want
+                    # stop showing the interactive prompt but we don't need to
+                    # ask any questions any more. This way, you get to see the
+                    # upgrades that are going to happen.
+                    yes_to_all = True
+                elif response == "QUIT":
+                    return 1
+            except KeyboardInterrupt:
+                return 1
+
         maybe_restriction = "" if not restriction else "; {0}".format(restriction)
         new_lines = "{0}=={1}{2} \\\n".format(req, data["version"], maybe_restriction)
         padding = " " * 4
@@ -204,7 +215,12 @@ def run_packages(
             if i != len(data["hashes"]) - 1:
                 new_lines += " \\"
             new_lines += "\n"
-        all_new_lines.append((package, new_lines))
+        all_new_lines.append((package, previous_name, new_lines))
+
+    if not all_new_lines:
+        # This can happen if you use 'interactive' and said no to everything or
+        # if every single package you listed already has the latest version.
+        return 0
 
     with open(file) as f:
         old_requirements = f.read()
@@ -228,6 +244,90 @@ def run_packages(
         if verbose:
             _verbose("Editing", file)
 
+    return 0
+
+
+def interactive_upgrade_request(
+    package, old_version, new_version, print_header=False, force_yes=False
+):
+    def print_version(v):
+        return str(v).replace("==", "").ljust(15)
+
+    if print_header:
+        print(
+            "PACKAGE".ljust(30),
+            print_version("YOUR VERSION"),
+            print_version("NEW VERSION"),
+        )
+
+    def print_line(checkbox=None):
+        if checkbox is None:
+            checkboxed = "?"
+        elif checkbox:
+            checkboxed = "✓"
+        else:
+            checkboxed = "✘"
+        print(
+            package.ljust(30),
+            print_version(old_version),
+            print_version(new_version),
+            checkboxed,
+        )
+
+    if force_yes:
+        print_line(True)
+        return "YES"
+    else:
+        print_line()
+
+    printed_help = []
+
+    def print_help():
+        print(
+            "y - Include this update (default)\n"
+            "n - Skip this update\n"
+            "a - Include this and all following upgrades\n"
+            "q - Skip this and all following upgrades\n"
+            "? - Print this help\n"
+        )
+        printed_help.append(1)
+
+    def clear_line():
+        sys.stdout.write("\033[F")  # Cursor up one line
+        sys.stdout.write("\033[K")  # Clear to the end of line
+
+    def ask():
+        answer = input("Update? [Y/n/a/q/?]: ").lower().strip()
+        if printed_help:
+            # Because the print_help() prints 5 lines to stdout.
+            # Plus 2 because of the original question line and the extra blank line.
+            for i in range(5 + 2):
+                clear_line()
+            # printed_help.clear()
+            del printed_help[:]
+
+        if answer == "n":
+            clear_line()
+            clear_line()
+            print_line(False)
+            return "NO"
+        if answer == "a":
+            clear_line()
+            return "ALL"
+        if answer == "q":
+            return "QUIT"
+        if answer == "y" or answer == "" or answer == "yes":
+            clear_line()
+            clear_line()
+            print_line(True)
+            return "YES"
+        if answer == "?":
+            print_help()
+
+        return ask()
+
+    return ask()
+
 
 def amend_requirements_content(requirements, all_new_lines):
     # I wish we had types!
@@ -250,9 +350,9 @@ def amend_requirements_content(requirements, all_new_lines):
                 break
         return lines != set([x.strip(" \\") for x in new_lines.splitlines()])
 
-    for package, new_lines in all_new_lines:
+    for package, old_name, new_lines in all_new_lines:
         regex = re.compile(
-            r"(^|\n|\n\r){0}==|(^|\n|\n\r){0}\[.*\]==".format(re.escape(package)),
+            r"(^|\n|\n\r){0}==|(^|\n|\n\r){0}\[.*\]==".format(re.escape(old_name)),
             re.IGNORECASE,
         )
         # if the package wasn't already there, add it to the bottom
@@ -530,6 +630,67 @@ def get_package_hashes(
     return {"package": package, "version": version, "hashes": hashes}
 
 
+def get_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "packages",
+        help="One or more package specifiers (e.g. some-package or some-package==1.2.3)",
+        nargs="*",
+    )
+    parser.add_argument(
+        "-r",
+        "--requirements-file",
+        help="requirements file to write to (default requirements.txt)",
+        default="requirements.txt",
+    )
+    parser.add_argument(
+        "-a",
+        "--algorithm",
+        help="The hash algorithm to use: one of sha256, sha384, sha512",
+        default=DEFAULT_ALGORITHM,
+    )
+    parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true")
+    parser.add_argument(
+        "--include-prereleases",
+        help="Include pre-releases (off by default)",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-p",
+        "--python-version",
+        help="Python version to add wheels for. May be used multiple times.",
+        action="append",
+        default=[],
+    )
+    parser.add_argument(
+        "--version", help="Version of hashin", action="store_true", default=False
+    )
+    parser.add_argument(
+        "--dry-run",
+        help="Don't touch requirements.txt and just show the diff",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
+        "-u",
+        "--update-all",
+        help="Update all mentioned packages in the requirements file.",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
+        "-i",
+        "--interactive",
+        help=(
+            "Ask about each possible update. "
+            "Only applicable together with --update-all/-u."
+        ),
+        action="store_true",
+        default=False,
+    )
+    return parser
+
+
 def main():
     if "--version" in sys.argv[1:]:
         # Can't be part of argparse because the 'packages' is mandatory
@@ -539,6 +700,7 @@ def main():
         print(pkg_resources.get_distribution("hashin").version)
         return 0
 
+    parser = get_parser()
     args = parser.parse_args()
 
     if args.update_all:
@@ -548,6 +710,13 @@ def main():
                 file=sys.stderr,
             )
             return 2
+    elif args.interactive:
+        print(
+            "--interactive (or -i) is only applicable together "
+            "with --update-all (or -u).",
+            file=sys.stderr,
+        )
+        return 4
     elif not args.packages:
         print("If you don't use --update-all you must list packages.", file=sys.stderr)
         parser.print_usage()
@@ -562,6 +731,7 @@ def main():
             verbose=args.verbose,
             include_prereleases=args.include_prereleases,
             dry_run=args.dry_run,
+            interactive=args.interactive,
         )
     except PackageError as exception:
         print(str(exception), file=sys.stderr)

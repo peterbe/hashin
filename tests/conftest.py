@@ -15,8 +15,8 @@ def murlopen():
 
 
 @pytest.fixture
-def mock_parser():
-    with mock.patch("hashin.parser") as patch:
+def mock_get_parser():
+    with mock.patch("hashin.get_parser") as patch:
         yield patch
 
 
