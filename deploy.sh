@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-python setup.py sdist bdist_wheel upload
+# From https://pypi.org/project/twine/
+
+python setup.py sdist bdist_wheel
+twine upload dist/*

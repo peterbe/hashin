@@ -195,6 +195,20 @@ Or with specific version, algorithm and certain Python versions::
         python_versions=('3.5',)
     ))
 
+Local development
+=================
+
+After you have cloned the project, created a virtual environment and run:
+
+    pip install -e ".[dev]"
+
+Now, to run it you can use the installed executable ``hashin`` and do things
+like::
+
+    touch /tmp/reqs.txt
+    hashin -r /tmp/reqs.txt Django
+
+
 Running tests
 =============
 
@@ -202,6 +216,10 @@ Simply run::
 
     python setup.py test
 
+When you use ``pip install ".[dev]"`` it will install ``tox`` which you can use
+to run the full test suites (plus linting) in different Python environments::
+
+    tox
 
 Running tests with test coverage
 ================================

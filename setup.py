@@ -28,6 +28,7 @@ setup(
     install_requires=["packaging", "pip-api"],
     tests_require=["pytest", "mock"],
     setup_requires=["pytest-runner"],
+    extras_require={"dev": ["tox", "twine"]},
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: System Administrators",
