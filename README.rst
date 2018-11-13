@@ -253,7 +253,6 @@ Version History
 ===============
 
 0.14.0
-
   * ``--interactive`` (when you use ``--update-all``) will iterate over all outdated
     versions in your requirements file and ask, for each one, if you want to
     updated it.
@@ -281,7 +280,6 @@ Version History
   * All code is now formatted with `Black <https://pypi.org/project/black/>`_.
 
 0.13.4
-
   * Ability to pass ``--dry-run`` which prints a diff of what it *would*
     do to your requirements file. See https://github.com/peterbe/hashin/pull/78
 
