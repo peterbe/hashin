@@ -252,7 +252,7 @@ put it directly into ``pip``.
 Version History
 ===============
 
-next
+0.14.0
 
   * ``--interactive`` (when you use ``--update-all``) will iterate over all outdated
     versions in your requirements file and ask, for each one, if you want to
