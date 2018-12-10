@@ -25,7 +25,7 @@ setup(
     url="https://github.com/peterbe/hashin",
     include_package_data=True,
     python_requires=">=2.7,!=3.0,!=3.1,!=3.2,!=3.3",
-    install_requires=["packaging", "pip-api"],
+    install_requires=["packaging", "pip-api", 'futures; python_version == "2.7"'],
     tests_require=["pytest", "mock"],
     setup_requires=["pytest-runner"],
     extras_require={"dev": ["tox", "twine"]},

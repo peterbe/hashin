@@ -15,6 +15,7 @@ import re
 import sys
 import json
 from itertools import chain
+import concurrent.futures
 
 import pip_api
 from packaging.requirements import Requirement
@@ -115,6 +116,18 @@ def run(specs, requirements_file, *args, **kwargs):
     return run_packages(specs, requirements_file, *args, **kwargs)
 
 
+def _explode_package_spec(spec):
+    restriction = None
+    if ";" in spec:
+        spec, restriction = [x.strip() for x in spec.split(";", 1)]
+    if "==" in spec:
+        package, version = spec.split("==")
+    else:
+        assert ">" not in spec and "<" not in spec
+        package, version = spec, None
+    return package, version, restriction
+
+
 def run_packages(
     specs,
     file,
@@ -125,21 +138,19 @@ def run_packages(
     dry_run=False,
     previous_versions=None,
     interactive=False,
+    synchronous=False,
 ):
     assert isinstance(specs, list), type(specs)
     all_new_lines = []
     first_interactive = True
     yes_to_all = False
+
+    lookup_memory = {}
+    if not synchronous and len(specs) > 1:
+        pre_download_packages(lookup_memory, specs, verbose=verbose)
+
     for spec in specs:
-        restriction = None
-        if ";" in spec:
-            spec, restriction = [x.strip() for x in spec.split(";", 1)]
-        if "==" in spec:
-            package, version = spec.split("==")
-        else:
-            assert ">" not in spec and "<" not in spec
-            package, version = spec, None
-            # There are other ways to what the latest version is.
+        package, version, restriction = _explode_package_spec(spec)
 
         # It's important to keep a track of what the package was called before
         # so that if we have to amend the requirements file, we know what to
@@ -160,6 +171,7 @@ def run_packages(
             python_versions=python_versions,
             algorithm=algorithm,
             include_prereleases=include_prereleases,
+            lookup_memory=lookup_memory,
         )
         package = data["package"]
         # We need to keep this `req` instance for the sake of turning it into a string
@@ -245,6 +257,20 @@ def run_packages(
             _verbose("Editing", file)
 
     return 0
+
+
+def pre_download_packages(memory, specs, verbose=False):
+    futures = {}
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        for spec in specs:
+            package, _, _ = _explode_package_spec(spec)
+            req = Requirement(package)
+            futures[
+                executor.submit(get_package_data, req.name, verbose=verbose)
+            ] = req.name
+        for future in concurrent.futures.as_completed(futures):
+            content = future.result()
+            memory[futures[future]] = content
 
 
 def interactive_upgrade_request(
@@ -574,6 +600,7 @@ def get_package_hashes(
     python_versions=(),
     verbose=False,
     include_prereleases=False,
+    lookup_memory=None,
 ):
     """
     Gets the hashes for the given package.
@@ -598,7 +625,10 @@ def get_package_hashes(
         ]
     }
     """
-    data = get_package_data(package, verbose)
+    if lookup_memory is not None and package in lookup_memory:
+        data = lookup_memory[package]
+    else:
+        data = get_package_data(package, verbose)
     if not version:
         version = get_latest_version(data, include_prereleases)
         assert version
@@ -668,6 +698,7 @@ def get_parser():
         "--version", help="Version of hashin", action="store_true", default=False
     )
     parser.add_argument(
+        "-d",
         "--dry-run",
         help="Don't touch requirements.txt and just show the diff",
         action="store_true",
@@ -687,6 +718,12 @@ def get_parser():
             "Ask about each possible update. "
             "Only applicable together with --update-all/-u."
         ),
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
+        "--synchronous",
+        help=("Do not download from pypi in parallel."),
         action="store_true",
         default=False,
     )
@@ -734,6 +771,7 @@ def main():
             include_prereleases=args.include_prereleases,
             dry_run=args.dry_run,
             interactive=args.interactive,
+            synchronous=args.synchronous,
         )
     except PackageError as exception:
         print(str(exception), file=sys.stderr)

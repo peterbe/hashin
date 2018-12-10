@@ -29,6 +29,7 @@ def test_everything():
         dry_run=True,
         update_all=False,
         interactive=False,
+        synchronous=False,
     )
     assert args == (expected, [])
 
@@ -59,6 +60,7 @@ def test_everything_long():
         dry_run=True,
         update_all=False,
         interactive=False,
+        synchronous=False,
     )
     assert args == (expected, [])
 
@@ -76,5 +78,6 @@ def test_minimal():
         dry_run=False,
         update_all=False,
         interactive=False,
+        synchronous=False,
     )
     assert args == (expected, [])
