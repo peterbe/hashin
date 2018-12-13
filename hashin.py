@@ -44,6 +44,20 @@ else:
 
 DEFAULT_ALGORITHM = "sha256"
 
+MAX_WORKERS = None
+
+if sys.version_info >= (3, 4) and sys.version_info < (3, 5):
+    # Python 3.4 is an odd duck. It's the first Python 3 version that had
+    # concurrent.futures.ThreadPoolExecutor built in. (Python 2.7 needs a
+    # backport from PyPI)
+    # However, in Python 3.4 the max_workers (first and only argument) needs
+    # to be set. In version > 3.4 the max_workers argument can be None and
+    # it will itself figure it out by figuring out the systems number of
+    # CPUs and then multiplying that number by 5.
+    # So, exclusively for 3.4 we have to set this to some integer.
+    # Python 3.4 is small so it's not important that it's the perfect amount.
+    MAX_WORKERS = 5
+
 major_pip_version = int(pip_api.version().split(".")[0])
 if major_pip_version < 8:
     raise ImportError("hashin only works with pip 8.x or greater")
@@ -261,7 +275,7 @@ def run_packages(
 
 def pre_download_packages(memory, specs, verbose=False):
     futures = {}
-    with concurrent.futures.ThreadPoolExecutor() as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         for spec in specs:
             package, _, _ = _explode_package_spec(spec)
             req = Requirement(package)
@@ -723,7 +737,7 @@ def get_parser():
     )
     parser.add_argument(
         "--synchronous",
-        help=("Do not download from pypi in parallel."),
+        help="Do not download from pypi in parallel.",
         action="store_true",
         default=False,
     )
