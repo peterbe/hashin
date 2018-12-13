@@ -145,6 +145,7 @@ def test_main_packageerrors_stderr(mock_run, capsys, mock_get_parser):
             dry_run=False,
             update_all=False,
             interactive=False,
+            synchronous=False,
         )
 
     mock_get_parser().parse_args.side_effect = mock_parse_args
@@ -167,6 +168,7 @@ def test_packages_and_update_all(capsys, mock_get_parser):
             dry_run=False,
             update_all=True,  # Note!
             interactive=False,
+            synchronous=False,
         )
 
     mock_get_parser().parse_args.side_effect = mock_parse_args
@@ -191,6 +193,7 @@ def test_no_packages_and_not_update_all(capsys, mock_get_parser):
             dry_run=False,
             update_all=False,
             interactive=False,
+            synchronous=False,
         )
 
     mock_get_parser().parse_args.side_effect = mock_parse_args
@@ -213,6 +216,7 @@ def test_interactive_not_update_all(mock_get_parser, capsys):
             dry_run=False,
             update_all=False,  # Note!
             interactive=True,  # Note!
+            synchronous=False,
         )
 
     mock_get_parser().parse_args.side_effect = mock_parse_args
