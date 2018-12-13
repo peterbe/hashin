@@ -270,6 +270,11 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.14.1
+  * All HTTP GET work to fetch information about packages from PyPI is done in
+    concurrent threads. Requires backport for Python 2.7.
+    See https://github.com/peterbe/hashin/issues/101
+
 0.14.0
   * ``--interactive`` (when you use ``--update-all``) will iterate over all outdated
     versions in your requirements file and ask, for each one, if you want to
