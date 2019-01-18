@@ -270,6 +270,11 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.14.2
+  * When using ``--update-all`` and parsing requirements file it could be fooled
+    by comments that look like package specs (e.g ``# check out foo==1.0``)
+    See See https://github.com/peterbe/hashin/issues/103
+
 0.14.1
   * All HTTP GET work to fetch information about packages from PyPI is done in
     concurrent threads. Requires backport for Python 2.7.
