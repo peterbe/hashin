@@ -1532,6 +1532,48 @@ def test_run_update_all(murlopen, tmpfile):
         assert lines[0] == "hashin==0.11 \\"
 
 
+def test_run_comments_with_package_spec_patterns(murlopen, tmpfile, capsys):
+    """Based on https://github.com/peterbe/hashin/issues/103
+    Essentially, the regex that looks for package specs in each line of the
+    requirements file might pick up lines that are actually comments.
+    """
+
+    def mocked_get(url, **options):
+        if url == "https://pypi.org/pypi/hashin/json":
+            return _Response(
+                {
+                    "info": {"version": "0.11", "name": "hashin"},
+                    "releases": {
+                        "0.11": [
+                            {
+                                "url": "https://pypi.org/packages/source/p/hashin/hashin-0.11.tar.gz",
+                                "digests": {"sha256": "bbbbb"},
+                            }
+                        ],
+                        "0.10": [
+                            {
+                                "url": "https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz",
+                                "digests": {"sha256": "aaaaa"},
+                            }
+                        ],
+                    },
+                }
+            )
+
+    murlopen.side_effect = mocked_get
+
+    with tmpfile() as filename:
+        with open(filename, "w") as f:
+            f.write("# Hey, don't use hashin==1.2.3 \n")
+            f.write("hashin==0.11 \\\n")
+            f.write("    --hash=sha256:bbbbb\n")
+            f.write("\n")
+
+        retcode = hashin.run([], filename, "sha256")
+        # Since this is based a stupidity test, just be content that it works.
+        assert retcode == 0
+
+
 def test_run_dry(murlopen, tmpfile, capsys):
     """dry run should edit the requirements.txt file and print
     hashes and package name in the console

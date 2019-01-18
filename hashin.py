@@ -115,7 +115,7 @@ def run(specs, requirements_file, *args, **kwargs):
         previous_versions = {}
         with open(requirements_file) as f:
             for line in f:
-                if regex.search(line):
+                if regex.search(line) and not line.lstrip().startswith("#"):
                     req = Requirement(line.split("\\")[0])
                     # Deliberately strip the specifier (aka. the version)
                     version = req.specifier
