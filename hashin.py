@@ -164,7 +164,9 @@ def run_packages(
 
     lookup_memory = {}
     if not synchronous and len(specs) > 1:
-        pre_download_packages(lookup_memory, specs, verbose=verbose, index_url=index_url)
+        pre_download_packages(
+            lookup_memory, specs, verbose=verbose, index_url=index_url
+        )
 
     for spec in specs:
         package, version, restriction = _explode_package_spec(spec)
@@ -284,7 +286,9 @@ def pre_download_packages(memory, specs, verbose=False, index_url=None):
             package, _, _ = _explode_package_spec(spec)
             req = Requirement(package)
             futures[
-                executor.submit(get_package_data, req.name, verbose=verbose, index_url=index_url)
+                executor.submit(
+                    get_package_data, req.name, verbose=verbose, index_url=index_url
+                )
             ] = req.name
         for future in concurrent.futures.as_completed(futures):
             content = future.result()
