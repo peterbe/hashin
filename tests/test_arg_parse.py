@@ -16,6 +16,8 @@ def test_everything():
             "3.5",
             "-v",
             "--dry-run",
+            "--index-url",
+            "https://pypi1.someorg.net/",
         ]
     )
     expected = argparse.Namespace(
@@ -30,6 +32,7 @@ def test_everything():
         update_all=False,
         interactive=False,
         synchronous=False,
+        index_url="https://pypi1.someorg.net/",
     )
     assert args == (expected, [])
 
@@ -47,6 +50,8 @@ def test_everything_long():
             "3.5",
             "--verbose",
             "--dry-run",
+            "--index-url",
+            "https://pypi1.someorg.net/",
         ]
     )
     expected = argparse.Namespace(
@@ -61,6 +66,7 @@ def test_everything_long():
         update_all=False,
         interactive=False,
         synchronous=False,
+        index_url="https://pypi1.someorg.net/",
     )
     assert args == (expected, [])
 
@@ -79,5 +85,6 @@ def test_minimal():
         update_all=False,
         interactive=False,
         synchronous=False,
+        index_url=None,
     )
     assert args == (expected, [])

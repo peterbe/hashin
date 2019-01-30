@@ -146,6 +146,7 @@ def test_main_packageerrors_stderr(mock_run, capsys, mock_get_parser):
             update_all=False,
             interactive=False,
             synchronous=False,
+            index_url=None,
         )
 
     mock_get_parser().parse_args.side_effect = mock_parse_args
@@ -1220,6 +1221,53 @@ def test_run_without_specific_version(murlopen, tmpfile):
         assert output.startswith("hashin==0.10")
 
 
+def test_run_with_alternate_index_url(murlopen, tmpfile):
+    def mocked_get(url, **options):
+        if url == "https://pypi.internal.net/pypi/hashin/json":
+            return _Response(
+                {
+                    "info": {"version": "0.10", "name": "hashin"},
+                    "releases": {
+                        "0.10": [
+                            {
+                                "url": "https://pypi.internal.net/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl",
+                                "digests": {"sha256": "aaaaa"},
+                            },
+                            {
+                                "url": "https://pypi.internal.net/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl",
+                                "digests": {"sha256": "bbbbb"},
+                            },
+                            {
+                                "url": "https://pypi.internal.net/packages/source/p/hashin/hashin-0.10.tar.gz",
+                                "digests": {"sha256": "ccccc"},
+                            },
+                        ]
+                    },
+                }
+            )
+
+        raise NotImplementedError(url)
+
+    murlopen.side_effect = mocked_get
+
+    with tmpfile() as filename:
+        with open(filename, "w") as f:
+            f.write("")
+
+        retcode = hashin.run(
+            "hashin",
+            filename,
+            "sha256",
+            verbose=True,
+            index_url="https://pypi.internal.net/",
+        )
+
+        assert retcode == 0
+        with open(filename) as f:
+            output = f.read()
+        assert output.startswith("hashin==0.10")
+
+
 def test_run_contained_names(murlopen, tmpfile):
     """
     This is based on https://github.com/peterbe/hashin/issues/35
@@ -2000,6 +2048,51 @@ def test_get_package_hashes(murlopen):
         "package": "hashin",
         "version": "0.10",
         "hashes": [{"hash": "aaaaa"}, {"hash": "bbbbb"}, {"hash": "ccccc"}],
+    }
+
+    assert result == expected
+
+
+def test_get_package_hashes_from_alternate_index_url(murlopen):
+    def mocked_get(url, **options):
+        if url == "https://pypi.internal.net/pypi/hashin/json":
+            return _Response(
+                {
+                    "info": {"version": "0.10", "name": "hashin"},
+                    "releases": {
+                        "0.10": [
+                            {
+                                "url": "https://pypi.internal.net/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl",
+                                "digests": {"sha256": "ddddd"},
+                            },
+                            {
+                                "url": "https://pypi.internal.net/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl",
+                                "digests": {"sha256": "eeeee"},
+                            },
+                            {
+                                "url": "https://pypi.internal.net/packages/source/p/hashin/hashin-0.10.tar.gz",
+                                "digests": {"sha256": "fffff"},
+                            },
+                        ]
+                    },
+                }
+            )
+
+        raise NotImplementedError(url)
+
+    murlopen.side_effect = mocked_get
+
+    result = hashin.get_package_hashes(
+        package="hashin",
+        version="0.10",
+        algorithm="sha256",
+        index_url="https://pypi.internal.net/",
+    )
+
+    expected = {
+        "package": "hashin",
+        "version": "0.10",
+        "hashes": [{"hash": "ddddd"}, {"hash": "eeeee"}, {"hash": "fffff"}],
     }
 
     assert result == expected
