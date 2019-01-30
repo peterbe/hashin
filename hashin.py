@@ -46,6 +46,8 @@ else:
 
 DEFAULT_ALGORITHM = "sha256"
 
+DEFAULT_INDEX_URL = os.environ.get("INDEX_URL", "https://pypi.org/")
+
 MAX_WORKERS = None
 
 if sys.version_info >= (3, 4) and sys.version_info < (3, 5):
@@ -155,7 +157,7 @@ def run_packages(
     previous_versions=None,
     interactive=False,
     synchronous=False,
-    index_url=None,
+    index_url=DEFAULT_INDEX_URL,
 ):
     assert isinstance(specs, list), type(specs)
     all_new_lines = []
@@ -279,16 +281,14 @@ def run_packages(
     return 0
 
 
-def pre_download_packages(memory, specs, verbose=False, index_url=None):
+def pre_download_packages(memory, specs, verbose=False, index_url=DEFAULT_INDEX_URL):
     futures = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         for spec in specs:
             package, _, _ = _explode_package_spec(spec)
             req = Requirement(package)
             futures[
-                executor.submit(
-                    get_package_data, req.name, verbose=verbose, index_url=index_url
-                )
+                executor.submit(get_package_data, req.name, index_url, verbose=verbose)
             ] = req.name
         for future in concurrent.futures.as_completed(futures):
             content = future.result()
@@ -575,7 +575,7 @@ def filter_releases(releases, python_versions):
     return filtered
 
 
-def get_package_data(package, verbose=False, index_url=None):
+def get_package_data(package, index_url, verbose=False):
     path = "/pypi/%s/json" % package
     url = urljoin(index_url, path)
     if verbose:
@@ -624,7 +624,7 @@ def get_package_hashes(
     verbose=False,
     include_prereleases=False,
     lookup_memory=None,
-    index_url=None,
+    index_url=DEFAULT_INDEX_URL,
 ):
     """
     Gets the hashes for the given package.
@@ -652,7 +652,7 @@ def get_package_hashes(
     if lookup_memory is not None and package in lookup_memory:
         data = lookup_memory[package]
     else:
-        data = get_package_data(package, verbose, index_url=index_url)
+        data = get_package_data(package, index_url, verbose)
     if not version:
         version = get_latest_version(data, include_prereleases)
         assert version
@@ -753,8 +753,8 @@ def get_parser():
     )
     parser.add_argument(
         "--index-url",
-        help="package index url (default https://pypi.org/)",
-        default="https://pypi.org/",
+        help="alternate package index url (default https://pypi.org/)",
+        default=None,
     )
     return parser
 

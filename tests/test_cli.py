@@ -117,12 +117,7 @@ def test_get_hashes_error(murlopen):
 
     murlopen.side_effect = mocked_get
     with pytest.raises(hashin.PackageError):
-        hashin.run(
-            "somepackage==1.2.3",
-            "doesntmatter.txt",
-            "sha256",
-            index_url="https://pypi.org/",
-        )
+        hashin.run("somepackage==1.2.3", "doesntmatter.txt", "sha256")
 
 
 def test_non_200_ok_download(murlopen):
@@ -132,12 +127,7 @@ def test_non_200_ok_download(murlopen):
     murlopen.side_effect = mocked_get
 
     with pytest.raises(hashin.PackageError):
-        hashin.run(
-            "somepackage==1.2.3",
-            "doesntmatter.txt",
-            "sha256",
-            index_url="https://pypi.org/",
-        )
+        hashin.run("somepackage==1.2.3", "doesntmatter.txt", "sha256")
 
 
 def test_main_packageerrors_stderr(mock_run, capsys, mock_get_parser):
@@ -156,7 +146,7 @@ def test_main_packageerrors_stderr(mock_run, capsys, mock_get_parser):
             update_all=False,
             interactive=False,
             synchronous=False,
-            index_url="https://pypi.org/",
+            index_url=None,
         )
 
     mock_get_parser().parse_args.side_effect = mock_parse_args
@@ -602,13 +592,7 @@ def test_run(murlopen, tmpfile, capsys):
         with open(filename, "w") as f:
             f.write("")
 
-        retcode = hashin.run(
-            "hashin==0.10",
-            filename,
-            "sha256",
-            verbose=True,
-            index_url="https://pypi.org/",
-        )
+        retcode = hashin.run("hashin==0.10", filename, "sha256", verbose=True)
 
         assert retcode == 0
         with open(filename) as f:
@@ -639,9 +623,7 @@ def test_run(murlopen, tmpfile, capsys):
         assert "aaaaa" in out_lines[2], out_lines[2]
 
         # Change algorithm
-        retcode = hashin.run(
-            "hashin==0.10", filename, "sha512", index_url="https://pypi.org/"
-        )
+        retcode = hashin.run("hashin==0.10", filename, "sha512")
         assert retcode == 0
         with open(filename) as f:
             output = f.read()
@@ -706,13 +688,7 @@ def test_run_atomic_not_write_with_error_on_last_package(murlopen, tmpfile):
             f.write("")
 
         with pytest.raises(hashin.PackageNotFoundError):
-            hashin.run(
-                ["hashin", "gobblygook"],
-                filename,
-                "sha256",
-                verbose=True,
-                index_url="https://pypi.org/",
-            )
+            hashin.run(["hashin", "gobblygook"], filename, "sha256", verbose=True)
 
         with open(filename) as f:
             output = f.read()
@@ -864,13 +840,7 @@ enum34==1.1.5; python_version <= '3.4' \\
 
         # Basically means we're saying "No" to all of them.
         with mock.patch("hashin.input", return_value="N"):
-            retcode = hashin.run(
-                None,
-                filename,
-                "sha256",
-                interactive=True,
-                index_url="https://pypi.org/",
-            )
+            retcode = hashin.run(None, filename, "sha256", interactive=True)
         assert retcode == 0
 
         with open(filename) as f:
@@ -891,13 +861,7 @@ enum34==1.1.5; python_version <= '3.4' \\
 
         with mock.patch("hashin.input") as mocked_input:
             mocked_input.side_effect = mock_input
-            retcode = hashin.run(
-                None,
-                filename,
-                "sha256",
-                interactive=True,
-                index_url="https://pypi.org/",
-            )
+            retcode = hashin.run(None, filename, "sha256", interactive=True)
         assert retcode == 0
 
         # The expected output is that only "requests[security]" and "enum34"
@@ -1075,13 +1039,7 @@ enum34==1.1.5; python_version <= '3.4' \\
 
         with mock.patch("hashin.input") as mocked_input:
             mocked_input.side_effect = mock_input
-            retcode = hashin.run(
-                None,
-                filename,
-                "sha256",
-                interactive=True,
-                index_url="https://pypi.org/",
-            )
+            retcode = hashin.run(None, filename, "sha256", interactive=True)
         assert retcode != 0
         assert len(questions) == 1
 
@@ -1091,13 +1049,7 @@ enum34==1.1.5; python_version <= '3.4' \\
 
         with mock.patch("hashin.input") as mocked_input:
             mocked_input.side_effect = mock_input
-            retcode = hashin.run(
-                None,
-                filename,
-                "sha256",
-                interactive=True,
-                index_url="https://pypi.org/",
-            )
+            retcode = hashin.run(None, filename, "sha256", interactive=True)
         assert retcode == 0
 
         # The expected output is that only "requests[security]" and "enum34"
@@ -1206,13 +1158,7 @@ Hash-in==0.9 \\
             assert output == before
 
         with mock.patch("hashin.input", return_value="Y"):
-            retcode = hashin.run(
-                None,
-                filename,
-                "sha256",
-                interactive=True,
-                index_url="https://pypi.org/",
-            )
+            retcode = hashin.run(None, filename, "sha256", interactive=True)
         assert retcode == 0
 
         # The expected output is that only "requests[security]" and "enum34"
@@ -1267,9 +1213,7 @@ def test_run_without_specific_version(murlopen, tmpfile):
         with open(filename, "w") as f:
             f.write("")
 
-        retcode = hashin.run(
-            "hashin", filename, "sha256", verbose=True, index_url="https://pypi.org/"
-        )
+        retcode = hashin.run("hashin", filename, "sha256", verbose=True)
 
         assert retcode == 0
         with open(filename) as f:
@@ -1375,13 +1319,7 @@ def test_run_contained_names(murlopen, tmpfile):
         with open(filename, "w") as f:
             f.write("")
 
-        retcode = hashin.run(
-            "django-redis==4.7.0",
-            filename,
-            "sha256",
-            verbose=True,
-            index_url="https://pypi.org/",
-        )
+        retcode = hashin.run("django-redis==4.7.0", filename, "sha256", verbose=True)
 
         assert retcode == 0
         with open(filename) as f:
@@ -1393,13 +1331,7 @@ def test_run_contained_names(murlopen, tmpfile):
 
         # Now install the next package whose name is contained
         # in the first one.
-        retcode = hashin.run(
-            "redis==2.10.5",
-            filename,
-            "sha256",
-            verbose=True,
-            index_url="https://pypi.org/",
-        )
+        retcode = hashin.run("redis==2.10.5", filename, "sha256", verbose=True)
 
         assert retcode == 0
         with open(filename) as f:
@@ -1556,7 +1488,7 @@ def test_run_case_insensitive(murlopen, tmpfile):
 
     with tmpfile() as filename:
         with pytest.raises(FileNotFoundError):
-            hashin.run(None, filename, "sha256", index_url="https://pypi.org/")
+            hashin.run(None, filename, "sha256")
 
         with open(filename, "w") as f:
             f.write("# This is comment. Ignore this.\n")
@@ -1569,9 +1501,7 @@ def test_run_case_insensitive(murlopen, tmpfile):
             f.write("    --hash=sha256:12ce5c2ef718\n")
             f.write("\n")
 
-        retcode = hashin.run(
-            None, filename, "sha256", verbose=True, index_url="https://pypi.org/"
-        )
+        retcode = hashin.run(None, filename, "sha256", verbose=True)
 
         assert retcode == 0
         with open(filename) as f:
@@ -1631,13 +1561,7 @@ def test_run_update_all(murlopen, tmpfile):
         with open(filename, "w") as f:
             f.write("")
 
-        retcode = hashin.run(
-            "HAShin==0.10",
-            filename,
-            "sha256",
-            verbose=True,
-            index_url="https://pypi.org/",
-        )
+        retcode = hashin.run("HAShin==0.10", filename, "sha256", verbose=True)
 
         assert retcode == 0
         with open(filename) as f:
@@ -1647,9 +1571,7 @@ def test_run_update_all(murlopen, tmpfile):
         assert lines[0] == "hashin==0.10 \\"
 
         # Change version
-        retcode = hashin.run(
-            "hashIN==0.11", filename, "sha256", index_url="https://pypi.org/"
-        )
+        retcode = hashin.run("hashIN==0.11", filename, "sha256")
         assert retcode == 0
         with open(filename) as f:
             output = f.read()
@@ -1695,7 +1617,7 @@ def test_run_comments_with_package_spec_patterns(murlopen, tmpfile, capsys):
             f.write("    --hash=sha256:bbbbb\n")
             f.write("\n")
 
-        retcode = hashin.run([], filename, "sha256", index_url="https://pypi.org/")
+        retcode = hashin.run([], filename, "sha256")
         # Since this is based a stupidity test, just be content that it works.
         assert retcode == 0
 
@@ -1734,12 +1656,7 @@ def test_run_dry(murlopen, tmpfile, capsys):
             f.write("")
 
         retcode = hashin.run(
-            "hashin==0.10",
-            filename,
-            "sha256",
-            verbose=False,
-            dry_run=True,
-            index_url="https://pypi.org/",
+            "hashin==0.10", filename, "sha256", verbose=False, dry_run=True
         )
         assert retcode == 0
 
@@ -1805,12 +1722,7 @@ def test_run_dry_multiple_packages(murlopen, tmpfile, capsys):
             f.write("")
 
         retcode = hashin.run(
-            ["hashin", "requests"],
-            filename,
-            "sha256",
-            verbose=False,
-            dry_run=True,
-            index_url="https://pypi.org/",
+            ["hashin", "requests"], filename, "sha256", verbose=False, dry_run=True
         )
         assert retcode == 0
 
@@ -1930,11 +1842,7 @@ def test_run_pep_0496(murlopen, tmpfile):
             f.write("")
 
         retcode = hashin.run(
-            "enum34==1.1.6; python_version <= '3.4'",
-            filename,
-            "sha256",
-            verbose=True,
-            index_url="https://pypi.org/",
+            "enum34==1.1.6; python_version <= '3.4'", filename, "sha256", verbose=True
         )
 
         assert retcode == 0
@@ -2133,10 +2041,7 @@ def test_get_package_hashes(murlopen):
     murlopen.side_effect = mocked_get
 
     result = hashin.get_package_hashes(
-        package="hashin",
-        version="0.10",
-        algorithm="sha256",
-        index_url="https://pypi.org/",
+        package="hashin", version="0.10", algorithm="sha256"
     )
 
     expected = {
@@ -2213,20 +2118,14 @@ def test_get_package_hashes_package_not_found(murlopen):
 
     with pytest.raises(hashin.PackageNotFoundError) as exc_info:
         hashin.get_package_hashes(
-            package="gobblygook",
-            version="0.10",
-            algorithm="sha256",
-            index_url="https://pypi.org/",
+            package="gobblygook", version="0.10", algorithm="sha256"
         )
     assert str(exc_info.value) == "https://pypi.org/pypi/gobblygook/json"
 
     # Errors left as is if not a 404
     with pytest.raises(hashin.PackageError):
         hashin.get_package_hashes(
-            package="troublemaker",
-            version="0.10",
-            algorithm="sha256",
-            index_url="https://pypi.org/",
+            package="troublemaker", version="0.10", algorithm="sha256"
         )
 
 
@@ -2270,11 +2169,7 @@ def test_get_package_hashes_unknown_algorithm(murlopen, capsys):
     murlopen.side_effect = mocked_get
 
     result = hashin.get_package_hashes(
-        package="hashin",
-        version="0.10",
-        algorithm="sha512",
-        verbose=True,
-        index_url="https://pypi.org/",
+        package="hashin", version="0.10", algorithm="sha512", verbose=True
     )
     captured = capsys.readouterr()
     out_lines = captured.out.splitlines()
@@ -2338,9 +2233,7 @@ def test_get_package_hashes_without_version(murlopen, capsys):
 
     murlopen.side_effect = mocked_get
 
-    result = hashin.get_package_hashes(
-        package="hashin", verbose=True, index_url="https://pypi.org/"
-    )
+    result = hashin.get_package_hashes(package="hashin", verbose=True)
     assert result["package"] == "hashin"
     assert result["version"] == "0.10"
     assert result["hashes"]
@@ -2350,23 +2243,16 @@ def test_get_package_hashes_without_version(murlopen, capsys):
     # Let's do it again and mess with a few things.
     # First specify python_versions.
     result = hashin.get_package_hashes(
-        package="hashin",
-        verbose=True,
-        python_versions=("3.5",),
-        index_url="https://pypi.org/",
+        package="hashin", verbose=True, python_versions=("3.5",)
     )
     assert len(result["hashes"]) == 2  # instead of 3
     # Specify an unrecognized python version
     with pytest.raises(hashin.PackageError):
-        hashin.get_package_hashes(
-            package="hashin",
-            python_versions=("2.99999",),
-            index_url="https://pypi.org/",
-        )
+        hashin.get_package_hashes(package="hashin", python_versions=("2.99999",))
 
     # Look for a package without any releases
     with pytest.raises(hashin.PackageError):
-        hashin.get_package_hashes(package="uggamugga", index_url="https://pypi.org/")
+        hashin.get_package_hashes(package="uggamugga")
 
 
 def test_with_extras_syntax(murlopen, tmpfile):
@@ -2400,9 +2286,7 @@ def test_with_extras_syntax(murlopen, tmpfile):
         with open(filename, "w") as f:
             f.write("")
 
-        retcode = hashin.run(
-            "hashin[stuff]", filename, "sha256", index_url="https://pypi.org/"
-        )
+        retcode = hashin.run("hashin[stuff]", filename, "sha256")
 
         assert retcode == 0
         with open(filename) as f:
@@ -2435,9 +2319,7 @@ def test_extras_syntax_edit(murlopen, tmpfile):
             f.write("hashin==0.10\n")
             f.write("    --hash=sha256:ccccc\n")
 
-        retcode = hashin.run(
-            "hashin[stuff]", filename, "sha256", index_url="https://pypi.org/"
-        )
+        retcode = hashin.run("hashin[stuff]", filename, "sha256")
 
         assert retcode == 0
         with open(filename) as f:
@@ -2471,9 +2353,7 @@ def test_add_extra_extras_syntax_edit(murlopen, tmpfile):
             f.write("hashin[stuff]==0.10\n")
             f.write("    --hash=sha256:ccccc\n")
 
-        retcode = hashin.run(
-            "hashin[extra,stuff]", filename, "sha256", index_url="https://pypi.org/"
-        )
+        retcode = hashin.run("hashin[extra,stuff]", filename, "sha256")
 
         assert retcode == 0
         with open(filename) as f:
@@ -2509,9 +2389,7 @@ def test_change_extra_extras_syntax_edit(murlopen, tmpfile):
             f.write("hashin[stuff]==0.10\n")
             f.write("    --hash=sha256:ccccc\n")
 
-        retcode = hashin.run(
-            "hashin[different]", filename, "sha256", index_url="https://pypi.org/"
-        )
+        retcode = hashin.run("hashin[different]", filename, "sha256")
 
         assert retcode == 0
         with open(filename) as f:
@@ -2545,9 +2423,7 @@ def test_remove_extra_extras_syntax_edit(murlopen, tmpfile):
             f.write("hashin[stuff]==0.10\n")
             f.write("    --hash=sha256:ccccc\n")
 
-        retcode = hashin.run(
-            "hashin", filename, "sha256", index_url="https://pypi.org/"
-        )
+        retcode = hashin.run("hashin", filename, "sha256")
 
         assert retcode == 0
         with open(filename) as f:

@@ -85,6 +85,6 @@ def test_minimal():
         update_all=False,
         interactive=False,
         synchronous=False,
-        index_url="https://pypi.org/",
+        index_url=None,
     )
     assert args == (expected, [])
