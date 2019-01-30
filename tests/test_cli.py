@@ -461,7 +461,7 @@ autocompeter==1.2.3 \\
     assert result == new_lines[2]
 
 
-def test_amend_requirements_content_replacement_amonst_others():
+def test_amend_requirements_content_replacement_amongst_others():
     previous = (
         """
 otherpackage==1.0.0 --hash=sha256:cHay6ATFKumO3svU3B-8qBMYb-f1_dYlR4OgClWntEI
@@ -489,7 +489,7 @@ autocompeter==1.2.3 \\
     assert result == previous + new_lines[2]
 
 
-def test_amend_requirements_content_replacement_amonst_others_2():
+def test_amend_requirements_content_replacement_amongst_others_2():
     previous = (
         "https://github.com/rhelmer/pyinotify/archive/9ff352f.zip"
         "#egg=pyinotify "
@@ -609,7 +609,6 @@ def test_run(murlopen, tmpfile, capsys):
         # Now check the verbose output
         captured = capsys.readouterr()
         out_lines = captured.out.splitlines()
-        # out_lines = my_stdout.getvalue().splitlines()
         assert "https://pypi.org/pypi/hashin/json" in out_lines[0], out_lines[0]
         # url to download
         assert "hashin-0.10-py2-none-any.whl" in out_lines[1], out_lines[1]
@@ -645,6 +644,60 @@ def test_run(murlopen, tmpfile, capsys):
             "c64bdd9199421ef779072c174fa044b155babb12860cf000e36bc4d3586"
             "94fa22420c997b1dd75b623d4daa"
         ) in lines
+
+
+def test_canonical_list_of_hashes(murlopen, tmpfile, capsys):
+    """When hashes are written down, after the package spec, write down the hashes
+    in a canonical way. Essentially, in lexicographic order. But when comparing
+    existing hashes ignore any order.
+    """
+
+    def mocked_get(url, **options):
+        if url == "https://pypi.org/pypi/hashin/json":
+            return _Response(
+                {
+                    "info": {"version": "0.10", "name": "hashin"},
+                    "releases": {
+                        # NOTE that the order of list is different from
+                        # the order you'd get of `sorted(x.digest for x in releases)`
+                        "0.10": [
+                            {
+                                "url": "https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz",
+                                "digests": {"sha256": "ccccc"},
+                            },
+                            {
+                                "url": "https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl",
+                                "digests": {"sha256": "aaaaa"},
+                            },
+                            {
+                                "url": "https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl",
+                                "digests": {"sha256": "bbbbb"},
+                            },
+                        ]
+                    },
+                }
+            )
+        raise NotImplementedError(url)
+
+    murlopen.side_effect = mocked_get
+
+    with tmpfile() as filename:
+        with open(filename, "w") as f:
+            f.write("")
+
+        retcode = hashin.run("hashin==0.10", filename, "sha256")
+
+        assert retcode == 0
+        with open(filename) as f:
+            output = f.read()
+        assert output
+        assert output.endswith("\n")
+        lines = output.splitlines()
+
+        assert lines[0] == "hashin==0.10 \\"
+        assert lines[1] == "    --hash=sha256:aaaaa \\"
+        assert lines[2] == "    --hash=sha256:bbbbb \\"
+        assert lines[3] == "    --hash=sha256:ccccc"
 
 
 def test_run_atomic_not_write_with_error_on_last_package(murlopen, tmpfile):
@@ -1623,7 +1676,7 @@ def test_run_comments_with_package_spec_patterns(murlopen, tmpfile, capsys):
 
 
 def test_run_dry(murlopen, tmpfile, capsys):
-    """dry run should edit the requirements.txt file and print
+    """dry run should not edit the requirements file and print
     hashes and package name in the console
     """
 
