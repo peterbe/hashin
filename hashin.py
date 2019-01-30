@@ -753,7 +753,7 @@ def get_parser():
     )
     parser.add_argument(
         "--index-url",
-        help="alternate package index url (default https://pypi.org/)",
+        help="alternate package index url (default {0})".format(DEFAULT_INDEX_URL),
         default=None,
     )
     return parser
