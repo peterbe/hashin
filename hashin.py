@@ -47,6 +47,7 @@ else:
 DEFAULT_ALGORITHM = "sha256"
 
 DEFAULT_INDEX_URL = os.environ.get("INDEX_URL", "https://pypi.org/")
+assert DEFAULT_INDEX_URL
 
 MAX_WORKERS = None
 
@@ -159,6 +160,7 @@ def run_packages(
     synchronous=False,
     index_url=DEFAULT_INDEX_URL,
 ):
+    assert index_url
     assert isinstance(specs, list), type(specs)
     all_new_lines = []
     first_interactive = True
@@ -754,7 +756,7 @@ def get_parser():
     parser.add_argument(
         "--index-url",
         help="alternate package index url (default {0})".format(DEFAULT_INDEX_URL),
-        default=None,
+        default=DEFAULT_INDEX_URL,
     )
     return parser
 
