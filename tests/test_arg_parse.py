@@ -1,6 +1,6 @@
 import argparse
 
-from hashin import get_parser
+from hashin import get_parser, DEFAULT_INDEX_URL
 
 
 def test_everything():
@@ -85,6 +85,6 @@ def test_minimal():
         update_all=False,
         interactive=False,
         synchronous=False,
-        index_url=None,
+        index_url=DEFAULT_INDEX_URL,
     )
     assert args == (expected, [])

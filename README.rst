@@ -270,8 +270,12 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.14.4
+  * Bugfix for new ``--index-url`` option feature in version 0.14.3.
+    See https://github.com/peterbe/hashin/issues/108
+
 0.14.3
-  * New parameterr ``--index-url`` which allows to override the default which
+  * New parameter ``--index-url`` which allows to override the default which
     is ``https://pypi.org``. Thanks @nmacinnis
     See https://github.com/peterbe/hashin/pull/107
 
