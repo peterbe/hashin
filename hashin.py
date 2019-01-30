@@ -25,8 +25,10 @@ from packaging.version import parse
 if sys.version_info >= (3,):
     from urllib.request import urlopen
     from urllib.error import HTTPError
+    from urllib.parse import urljoin
 else:
     from urllib import urlopen
+    from urlparse import urljoin
 
     input = raw_input  # noqa
 
@@ -153,6 +155,7 @@ def run_packages(
     previous_versions=None,
     interactive=False,
     synchronous=False,
+    index_url=None,
 ):
     assert isinstance(specs, list), type(specs)
     all_new_lines = []
@@ -161,7 +164,7 @@ def run_packages(
 
     lookup_memory = {}
     if not synchronous and len(specs) > 1:
-        pre_download_packages(lookup_memory, specs, verbose=verbose)
+        pre_download_packages(lookup_memory, specs, verbose=verbose, index_url=index_url)
 
     for spec in specs:
         package, version, restriction = _explode_package_spec(spec)
@@ -186,6 +189,7 @@ def run_packages(
             algorithm=algorithm,
             include_prereleases=include_prereleases,
             lookup_memory=lookup_memory,
+            index_url=index_url,
         )
         package = data["package"]
         # We need to keep this `req` instance for the sake of turning it into a string
@@ -273,14 +277,14 @@ def run_packages(
     return 0
 
 
-def pre_download_packages(memory, specs, verbose=False):
+def pre_download_packages(memory, specs, verbose=False, index_url=None):
     futures = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         for spec in specs:
             package, _, _ = _explode_package_spec(spec)
             req = Requirement(package)
             futures[
-                executor.submit(get_package_data, req.name, verbose=verbose)
+                executor.submit(get_package_data, req.name, verbose=verbose, index_url=index_url)
             ] = req.name
         for future in concurrent.futures.as_completed(futures):
             content = future.result()
@@ -567,8 +571,9 @@ def filter_releases(releases, python_versions):
     return filtered
 
 
-def get_package_data(package, verbose=False):
-    url = "https://pypi.org/pypi/%s/json" % package
+def get_package_data(package, verbose=False, index_url=None):
+    path = "/pypi/%s/json" % package
+    url = urljoin(index_url, path)
     if verbose:
         print(url)
     content = json.loads(_download(url))
@@ -615,6 +620,7 @@ def get_package_hashes(
     verbose=False,
     include_prereleases=False,
     lookup_memory=None,
+    index_url=None,
 ):
     """
     Gets the hashes for the given package.
@@ -642,7 +648,7 @@ def get_package_hashes(
     if lookup_memory is not None and package in lookup_memory:
         data = lookup_memory[package]
     else:
-        data = get_package_data(package, verbose)
+        data = get_package_data(package, verbose, index_url=index_url)
     if not version:
         version = get_latest_version(data, include_prereleases)
         assert version
@@ -791,6 +797,7 @@ def main():
             dry_run=args.dry_run,
             interactive=args.interactive,
             synchronous=args.synchronous,
+            index_url=args.index_url,
         )
     except PackageError as exception:
         print(str(exception), file=sys.stderr)
