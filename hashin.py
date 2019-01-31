@@ -246,7 +246,7 @@ def run_packages(
         maybe_restriction = "" if not restriction else "; {0}".format(restriction)
         new_lines = "{0}=={1}{2} \\\n".format(req, data["version"], maybe_restriction)
         padding = " " * 4
-        for i, release in enumerate(data["hashes"]):
+        for i, release in enumerate(sorted(data["hashes"], key=lambda r: r["hash"])):
             new_lines += "{0}--hash={1}:{2}".format(padding, algorithm, release["hash"])
             if i != len(data["hashes"]) - 1:
                 new_lines += " \\"
