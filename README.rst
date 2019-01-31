@@ -270,6 +270,11 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.14.5
+  * When writing down hashes, they are now done in a lexigraphically ordered
+    way. This makes the writes to the requirements file more predictable.
+    See https://github.com/peterbe/hashin/issues/105
+
 0.14.4
   * Bugfix for new ``--index-url`` option feature in version 0.14.3.
     See https://github.com/peterbe/hashin/issues/108
