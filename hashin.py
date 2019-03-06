@@ -773,6 +773,23 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
+    if (
+        args.update_all
+        and args.packages
+        and len(args.packages) == 1
+        and os.path.isfile(args.packages[0])
+        and args.packages[0].endswith(".txt")
+    ):
+        # It's totally common to make the mistake of using the `--update-all` flag
+        # and specifying the requirements file as the first argument. E.g.
+        #
+        #     $ hashin --update-all --interactive myproject/reqs.txt
+        #
+        # The user intention is clear any non-keyed flags get interpreted as a
+        # list of "packages". Let's fix that for the user.
+        args.requirements_file = args.packages[0]
+        args.packages = []
+
     if args.update_all:
         if args.packages:
             print(
