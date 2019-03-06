@@ -182,6 +182,36 @@ def test_packages_and_update_all(capsys, mock_get_parser):
     )
 
 
+def test_packages_and_update_all_with_requirements_file(
+    capsys, mock_get_parser, tmpfile
+):
+    with tmpfile() as filename:
+        with open(filename, "w") as f:
+            f.write("")
+
+        def mock_parse_args(*a, **k):
+            return argparse.Namespace(
+                packages=[filename],  # Note!
+                algorithm="sha256",
+                python_version="3.8",
+                verbose=False,
+                include_prereleases=False,
+                dry_run=False,
+                update_all=True,
+                interactive=False,
+                synchronous=False,
+                index_url="anything",
+            )
+
+        mock_get_parser().parse_args.side_effect = mock_parse_args
+
+        error = hashin.main()
+        assert error == 0
+        # Because the requirements file is empty, the update-all command
+        # won't find anything to query the internet about so we don't
+        # need to mock murlopen in this test.
+
+
 def test_no_packages_and_not_update_all(capsys, mock_get_parser):
     def mock_parse_args(*a, **k):
         return argparse.Namespace(
