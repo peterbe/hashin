@@ -270,6 +270,10 @@ put it directly into ``pip``.
 Version History
 ===============
 
+  * If you use ``--update-all`` and forget the ``-r`` when specifying your
+    requirements file, instead of complaining, it corrects the intentions.
+    See https://github.com/peterbe/hashin/issues/104
+
 0.14.5
   * When writing down hashes, they are now done in a lexigraphically ordered
     way. This makes the writes to the requirements file more predictable.
