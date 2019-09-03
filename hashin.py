@@ -404,8 +404,7 @@ def amend_requirements_content(requirements, all_new_lines):
 
     for package, old_name, new_lines in all_new_lines:
         regex = re.compile(
-            r"(^|\n|\n\r){0}==|(^|\n|\n\r){0}\[.*\]==".format(re.escape(old_name)),
-            re.IGNORECASE,
+            r"^{0}(\[.*\])?==".format(re.escape(old_name)), re.IGNORECASE | re.MULTILINE
         )
         # if the package wasn't already there, add it to the bottom
         if not regex.search(requirements):
