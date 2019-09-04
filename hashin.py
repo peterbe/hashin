@@ -421,7 +421,8 @@ def amend_requirements_content(requirements, all_new_lines):
             if is_different_lines(lines, new_lines, indent):
                 # need to replace the existing
                 combined = "\n".join(lines + [""])
-                indented = indent + new_lines.replace("\n", "\n" + indent)
+                # indent non-empty lines
+                indented = re.sub(r"^(.+)$", r"{0}\1".format(indent), new_lines, flags=re.MULTILINE)
                 requirements = requirements.replace(combined, indented)
 
     return requirements
