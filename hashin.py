@@ -387,7 +387,7 @@ def amend_requirements_content(requirements, all_new_lines):
 
     padding = " " * 4
 
-    def is_different_lines(package, new_lines):
+    def is_different_lines(package, new_lines, indent):
         # This assumes that for sure the package is already mentioned in the old
         # requirements. Now we just need to double-check that they really are
         # different.
@@ -396,34 +396,40 @@ def amend_requirements_content(requirements, all_new_lines):
         for line in requirements.splitlines():
             if regex.search(line):
                 lines.add(line.strip(" \\"))
-            elif lines and line.startswith(padding):
+            elif lines and line.startswith(indent + padding):
                 lines.add(line.strip(" \\"))
             elif lines:
                 break
-        return lines != set([x.strip(" \\") for x in new_lines.splitlines()])
+        return lines != set([indent + x.strip(" \\") for x in new_lines.splitlines()])
 
     for package, old_name, new_lines in all_new_lines:
         regex = re.compile(
-            r"^{0}(\[.*\])?==".format(re.escape(old_name)), re.IGNORECASE | re.MULTILINE
+            r"^(?P<indent>[ \t]*){0}(\[.*\])?==".format(re.escape(old_name)),
+            re.IGNORECASE | re.MULTILINE,
         )
         # if the package wasn't already there, add it to the bottom
-        if not regex.search(requirements):
+        match = regex.search(requirements)
+        if not match:
             # easy peasy
             if requirements:
                 requirements = requirements.strip() + "\n"
             requirements += new_lines.strip() + "\n"
-        elif is_different_lines(package, new_lines):
+        else:
+            indent = match.group("indent")
+            if not is_different_lines(package, new_lines, indent):
+                continue
             # need to replace the existing
             lines = []
             for line in requirements.splitlines():
                 if regex.search(line):
                     lines.append(line)
-                elif lines and line.startswith(padding):
+                elif lines and line.startswith(indent + padding):
                     lines.append(line)
                 elif lines:
                     break
             combined = "\n".join(lines + [""])
-            requirements = requirements.replace(combined, new_lines)
+            indented = indent + new_lines.replace("\n", "\n" + indent)
+            requirements = requirements.replace(combined, indented)
 
     return requirements
 
