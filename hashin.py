@@ -393,10 +393,10 @@ def amend_requirements_content(requirements, all_new_lines):
         # different.
         # The 'new_lines` is what we might intend to replace it with.
         old = set([l.strip(" \\") for l in old_lines])
-        new = set([indent + x.strip(" \\") for x in new_lines.splitlines()])
+        new = set([indent + x.strip(" \\") for x in new_lines])
         return old != new
 
-    for package, old_name, new_lines in all_new_lines:
+    for package, old_name, new_text in all_new_lines:
         regex = re.compile(
             r"^(?P<indent>[ \t]*){0}(\[.*\])?==".format(re.escape(old_name)),
             re.IGNORECASE | re.MULTILINE,
@@ -407,7 +407,7 @@ def amend_requirements_content(requirements, all_new_lines):
             # easy peasy
             if requirements:
                 requirements = requirements.strip() + "\n"
-            requirements += new_lines.strip() + "\n"
+            requirements += new_text.strip() + "\n"
         else:
             indent = match.group("indent")
             lines = []
@@ -418,11 +418,13 @@ def amend_requirements_content(requirements, all_new_lines):
                     lines.append(line)
                 elif lines:
                     break
-            if is_different_lines(lines, new_lines, indent):
+            if is_different_lines(lines, new_text.splitlines(), indent):
                 # need to replace the existing
                 combined = "\n".join(lines + [""])
                 # indent non-empty lines
-                indented = re.sub(r"^(.+)$", r"{0}\1".format(indent), new_lines, flags=re.MULTILINE)
+                indented = re.sub(
+                    r"^(.+)$", r"{0}\1".format(indent), new_text, flags=re.MULTILINE
+                )
                 requirements = requirements.replace(combined, indented)
 
     return requirements
