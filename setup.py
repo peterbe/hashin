@@ -1,5 +1,7 @@
 from os import path
+
 from setuptools import setup
+
 
 _here = path.dirname(__file__)
 
@@ -14,7 +16,7 @@ except ImportError:
 
 setup(
     name="hashin",
-    version="0.14.5",
+    version="0.14.6",
     description="Edits your requirements.txt by hashing them in",
     long_description=open(path.join(_here, "README.rst")).read(),
     author="Peter Bengtsson",

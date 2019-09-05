@@ -270,6 +270,10 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.14.6
+  * Indentation in the requirements file is preserved.
+    See https://github.com/peterbe/hashin/issues/112 Thanks @techtonik
+
   * If you use ``--update-all`` and forget the ``-r`` when specifying your
     requirements file, instead of complaining, it corrects the intentions.
     See https://github.com/peterbe/hashin/issues/104
