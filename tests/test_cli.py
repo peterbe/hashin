@@ -579,6 +579,46 @@ selenium==2.53.1 \
     assert new_lines[2] in result
 
 
+def test_amend_requirements_content_indented():
+    """This test came from https://github.com/peterbe/hashin/issues/112"""
+    requirements = (
+        """
+boto3==1.9.85 \\
+    --hash=sha256:acfd27967cf1ba7f9d83ad6fc2011764541e4c295fe0d896ea7b495cc2f03336 \\
+    --hash=sha256:96296871863e0245b04931df7dd5c583e53cadbe1d54197829b34b03b0d048a8
+
+    botocore==1.12.85 \\
+        --hash=sha256:af727d4af0cf1ddbf84eaf1cc9d0160ff066eac7f9e6a2fe6a75ccbed4452c98 \\
+        --hash=sha256:c381fd05b777f41a608ea0846a8d8ecc32077a83e456d05e824cce8d6b213e32
+    """.strip()
+        + "\n"
+    )
+    expect = (
+        """
+boto3==1.9.85 \\
+    --hash=sha256:acfd27967cf1ba7f9d83ad6fc2011764541e4c295fe0d896ea7b495cc2f03336 \\
+    --hash=sha256:96296871863e0245b04931df7dd5c583e53cadbe1d54197829b34b03b0d048a8
+
+    botocore==1.12.221 \\
+        --hash=sha256:6d49deff062d2ae0f03fc26b56df8b1bb9e8b136657bcd8d84c986a4068fb784 \\
+        --hash=sha256:bbee3fdcbe56ca53e2c32c6c12d174fa9b4ffe27b633183c29bd5aec9e200bae
+    """.strip()
+        + "\n"
+    )
+    new_lines = (
+        "botocore",
+        "botocore",
+        """
+botocore==1.12.221 \\
+    --hash=sha256:6d49deff062d2ae0f03fc26b56df8b1bb9e8b136657bcd8d84c986a4068fb784 \\
+    --hash=sha256:bbee3fdcbe56ca53e2c32c6c12d174fa9b4ffe27b633183c29bd5aec9e200bae
+    """.strip()
+        + "\n",
+    )
+    result = hashin.amend_requirements_content(requirements, [new_lines])
+    assert result == expect
+
+
 def test_run(murlopen, tmpfile, capsys):
     def mocked_get(url, **options):
         if url == "https://pypi.org/pypi/hashin/json":
