@@ -388,17 +388,39 @@ def amend_requirements_content(requirements, all_new_lines):
     padding = " " * 4
 
     def is_different_lines(old_lines, new_lines, indent):
+        # This regex is used to only temporarily normalize the names of packages
+        # in the lines being compared. This results in "old" names matching
+        # "new" names so that hashin correctly replaces them when it looks for
+        # them.
+        rex = re.compile("[-_]")
+
         # This assumes that the package is already mentioned in the old
         # requirements. Now we just need to double-check that its lines are
         # different.
         # The 'new_lines` is what we might intend to replace it with.
-        old = set([l.strip(" \\") for l in old_lines])
+        old = set([rex.sub("-", l.strip(" \\")) for l in old_lines])
         new = set([indent + x.strip(" \\") for x in new_lines])
         return old != new
 
     for package, old_name, new_text in all_new_lines:
+        # The call to `escape` will turn hyphens into escaped hyphens
+        #
+        # ex.
+        #   -       becomes     \\-
+        #
+        escaped = re.escape(old_name)
+
+        # This changes those escaped hypens into a pattern to match
+        #
+        # ex.
+        #   \\-     becomes     [-_]
+        #
+        # This is necessary so that hashin will correctly find underscored (old)
+        # and hyphenated (new) package names so that it will correctly replace an
+        # old name with the new name when there is a version update.
+        escape_replaced = escaped.replace("\\-", "[-_]")
         regex = re.compile(
-            r"^(?P<indent>[ \t]*){0}(\[.*\])?==".format(re.escape(old_name)),
+            r"^(?P<indent>[ \t]*){0}(\[.*\])?==".format(escape_replaced),
             re.IGNORECASE | re.MULTILINE,
         )
         # if the package wasn't already there, add it to the bottom

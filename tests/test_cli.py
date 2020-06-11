@@ -294,6 +294,26 @@ autocompeter==1.2.3 \\
     assert result == requirements + new_lines[2]
 
 
+def test_amend_requirements_content_new_2():
+    requirements = (
+        """
+# empty so far
+    """.strip()
+        + "\n"
+    )
+    new_lines = (
+        "discogs-client",
+        "Discogs_client",
+        """
+discogs-client==1.1 \\
+    --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
+    """.strip()
+        + "\n",
+    )
+    result = hashin.amend_requirements_content(requirements, [new_lines])
+    assert result == requirements + new_lines[2]
+
+
 def test_amend_requirements_different_old_name():
     requirements = (
         """
@@ -2665,3 +2685,222 @@ def test_interactive_upgrade_request_force_yes(capsys):
             "hashin", old_version, new_version, force_yes=True
         )
         assert result == "YES"
+
+
+class TestIssue116:
+    """Tests for validating fix related to GH issue #116
+
+    https://github.com/peterbe/hashin/issues/116
+    """
+
+    def test_amend_requirements_content_new_without_env_markers(self):
+        requirements = (
+            """
+# empty so far
+        """.strip()
+            + "\n"
+        )
+        new_lines = (
+            "discogs-client",
+            "discogs-client",
+            """
+discogs-client==1.1 \\
+    --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
+        """.strip()
+            + "\n",
+        )
+        result = hashin.amend_requirements_content(requirements, [new_lines])
+        assert result == requirements + new_lines[2]
+
+    def test_amend_requirements_content_new_with_env_markers(self):
+        requirements = (
+            """
+# empty so far
+        """.strip()
+            + "\n"
+        )
+        new_lines = (
+            "discogs-client; python_version <= '3.4'",
+            "discogs-client; python_version <= '3.4'",
+            """
+discogs-client==1.1; python_version <= '3.4' \\
+    --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
+        """.strip()
+            + "\n",
+        )
+        result = hashin.amend_requirements_content(requirements, [new_lines])
+        assert result == requirements + new_lines[2]
+
+    def test_amend_requirements_different_old_name_without_env_markers(self):
+        requirements = (
+            """
+readme_renderer==25.0 \\
+    --hash=sha256:1b6d8dd1673a0b293766b4106af766b6eff3654605f9c4f239e65de6076bc222 \\
+    --hash=sha256:e67d64242f0174a63c3b727801a2fff4c1f38ebe5d71d95ff7ece081945a6cd4
+
+        """.strip()
+            + "\n"
+        )
+
+        new_lines = (
+            "readme-renderer",
+            "readme-renderer",
+            """
+readme-renderer==26.0 \\
+    --hash=sha256:cbe9db71defedd2428a1589cdc545f9bd98e59297449f69d721ef8f1cfced68d \\
+    --hash=sha256:cc4957a803106e820d05d14f71033092537a22daa4f406dfbdd61177e0936376
+
+        """.strip()
+            + "\n",
+        )
+        result = hashin.amend_requirements_content(requirements, [new_lines])
+        assert result == new_lines[2]
+
+    def test_amend_requirements_different_old_name_with_env_markers(self):
+        requirements = (
+            """
+readme_renderer==25.0; python_version <= "3.4" \\
+    --hash=sha256:1b6d8dd1673a0b293766b4106af766b6eff3654605f9c4f239e65de6076bc222 \\
+    --hash=sha256:e67d64242f0174a63c3b727801a2fff4c1f38ebe5d71d95ff7ece081945a6cd4
+
+        """.strip()
+            + "\n"
+        )
+
+        new_lines = (
+            "readme-renderer",
+            "readme-renderer",
+            """
+readme-renderer==26.0; python_version <= "3.4" \\
+    --hash=sha256:cbe9db71defedd2428a1589cdc545f9bd98e59297449f69d721ef8f1cfced68d \\
+    --hash=sha256:cc4957a803106e820d05d14f71033092537a22daa4f406dfbdd61177e0936376
+
+        """.strip()
+            + "\n",
+        )
+        result = hashin.amend_requirements_content(requirements, [new_lines])
+        assert result == new_lines[2]
+
+    def test_amend_requirements_without_env_markers_same_version(self):
+        requirements = (
+            """
+readme_renderer==25.0 \\
+    --hash=sha256:1b6d8dd1673a0b293766b4106af766b6eff3654605f9c4f239e65de6076bc222 \\
+    --hash=sha256:e67d64242f0174a63c3b727801a2fff4c1f38ebe5d71d95ff7ece081945a6cd4
+
+        """.strip()
+            + "\n"
+        )
+
+        new_lines = (
+            "readme-renderer",
+            "readme-renderer",
+            """
+readme_renderer==25.0 \\
+    --hash=sha256:1b6d8dd1673a0b293766b4106af766b6eff3654605f9c4f239e65de6076bc222 \\
+    --hash=sha256:e67d64242f0174a63c3b727801a2fff4c1f38ebe5d71d95ff7ece081945a6cd4
+
+        """.strip()
+            + "\n",
+        )
+        result = hashin.amend_requirements_content(requirements, [new_lines])
+        assert result == requirements
+
+    def test_amend_requirements_with_env_markers_same_version(self):
+        requirements = (
+            """
+readme_renderer==25.0; python_version <= "3.4" \\
+    --hash=sha256:1b6d8dd1673a0b293766b4106af766b6eff3654605f9c4f239e65de6076bc222 \\
+    --hash=sha256:e67d64242f0174a63c3b727801a2fff4c1f38ebe5d71d95ff7ece081945a6cd4
+
+        """.strip()
+            + "\n"
+        )
+
+        new_lines = (
+            "readme-renderer",
+            "readme-renderer",
+            """
+readme_renderer==25.0; python_version <= "3.4" \\
+    --hash=sha256:1b6d8dd1673a0b293766b4106af766b6eff3654605f9c4f239e65de6076bc222 \\
+    --hash=sha256:e67d64242f0174a63c3b727801a2fff4c1f38ebe5d71d95ff7ece081945a6cd4
+
+        """.strip()
+            + "\n",
+        )
+        result = hashin.amend_requirements_content(requirements, [new_lines])
+        assert result == requirements
+
+    def test_run_old_name_no_version_change(self, murlopen, tmpfile, capsys):
+        def mocked_get(url, **options):
+            if url == "https://pypi.org/pypi/readme_renderer/json":
+                return _Response(
+                    {
+                        "info": {"version": "0.25", "name": "readme-renderer"},
+                        "releases": {
+                            "25.0": [
+                                {
+                                    "url": "https://pypi.org/packages/source/p/readme-renderer/readme_renderer-25.0.tar.gz",
+                                    "digests": {"sha256": "bbbbb"},
+                                }
+                            ],
+                            "26.0": [
+                                {
+                                    "url": "https://pypi.org/packages/source/p/readme-renderer/readme_renderer-26.0.tar.gz",
+                                    "digests": {"sha256": "aaaaa"},
+                                }
+                            ],
+                        },
+                    }
+                )
+
+        murlopen.side_effect = mocked_get
+
+        with tmpfile() as filename:
+            with open(filename, "w") as f:
+                f.write("readme_renderer==25.0 \\\n")
+                f.write("    --hash=sha256:bbbbb\n")
+                f.write("\n")
+
+            retcode = hashin.run("readme_renderer==25.0", filename, "sha256")
+            assert retcode == 0
+            with open(filename) as f:
+                output = f.read()
+            assert "readme_renderer==25.0" in output
+
+    def test_run_old_name_new_version_change(self, murlopen, tmpfile, capsys):
+        def mocked_get(url, **options):
+            if url == "https://pypi.org/pypi/readme_renderer/json":
+                return _Response(
+                    {
+                        "info": {"version": "0.25", "name": "readme-renderer"},
+                        "releases": {
+                            "25.0": [
+                                {
+                                    "url": "https://pypi.org/packages/source/p/readme-renderer/readme_renderer-25.0.tar.gz",
+                                    "digests": {"sha256": "bbbbb"},
+                                }
+                            ],
+                            "26.0": [
+                                {
+                                    "url": "https://pypi.org/packages/source/p/readme-renderer/readme_renderer-26.0.tar.gz",
+                                    "digests": {"sha256": "aaaaa"},
+                                }
+                            ],
+                        },
+                    }
+                )
+
+        murlopen.side_effect = mocked_get
+
+        with tmpfile() as filename:
+            with open(filename, "w") as f:
+                f.write("readme_renderer==26.0 \\\n")
+                f.write("    --hash=sha256:bbbbb\n")
+                f.write("\n")
+
+            retcode = hashin.run("readme_renderer==26.0", filename, "sha256")
+            assert retcode == 0
+            with open(filename) as f:
+                output = f.read()
+            assert "readme-renderer==26.0" in output
