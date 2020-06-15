@@ -270,6 +270,10 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.15.0
+  * Use of underscore or hyphens in package names is corrected
+    See https://github.com/peterbe/hashin/issues/116 Thanks @caphrim007
+
 0.14.6
   * Indentation in the requirements file is preserved.
     See https://github.com/peterbe/hashin/issues/112 Thanks @techtonik
