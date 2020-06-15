@@ -2,8 +2,8 @@
 hashin
 ======
 
-.. image:: https://travis-ci.org/peterbe/hashin.svg?branch=master
-    :target: https://travis-ci.org/peterbe/hashin
+.. image:: https://github.com/peterbe/hashin/workflows/Python/badge.svg
+    :target: https://github.com/peterbe/hashin/actions
 
 .. image:: https://badge.fury.io/py/hashin.svg
     :target: https://pypi.python.org/pypi/hashin
@@ -269,6 +269,10 @@ put it directly into ``pip``.
 
 Version History
 ===============
+
+  * Switch to GitHub Actions instead of TravisCI. And test ``tox`` in
+    Python 3.7 and 3.8 additionally as well as upgrading lint requirements.
+    See https://github.com/peterbe/hashin/pull/118
 
 0.15.0
   * Use of underscore or hyphens in package names is corrected
