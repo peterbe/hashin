@@ -392,13 +392,13 @@ def amend_requirements_content(requirements, all_new_lines):
         # in the lines being compared. This results in "old" names matching
         # "new" names so that hashin correctly replaces them when it looks for
         # them.
-        rex = re.compile("[-_]")
+        match_delims = re.compile(r"[-_]")
 
         # This assumes that the package is already mentioned in the old
         # requirements. Now we just need to double-check that its lines are
         # different.
         # The 'new_lines` is what we might intend to replace it with.
-        old = set([rex.sub("-", l.strip(" \\")) for l in old_lines])
+        old = set([match_delims.sub("-", line.strip(" \\")) for line in old_lines])
         new = set([indent + x.strip(" \\") for x in new_lines])
         return old != new
 
