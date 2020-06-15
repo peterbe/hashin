@@ -2,8 +2,8 @@
 hashin
 ======
 
-.. image:: https://travis-ci.org/peterbe/hashin.svg?branch=master
-    :target: https://travis-ci.org/peterbe/hashin
+.. image:: https://github.com/peterbe/hashin/workflows/Python/badge.svg
+    :target: https://github.com/peterbe/hashin/actions
 
 .. image:: https://badge.fury.io/py/hashin.svg
     :target: https://pypi.python.org/pypi/hashin

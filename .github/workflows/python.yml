@@ -1,7 +1,7 @@
 # Based on
 # https://pypi.org/project/tox-gh-actions/
 
-name: Python package
+name: Python
 
 on: [push]
 
