@@ -8,7 +8,7 @@ hashin
 .. image:: https://badge.fury.io/py/hashin.svg
     :target: https://pypi.python.org/pypi/hashin
 
-Helps you write your ``requirements.txt`` with hashes so you can
+Hes you write your ``requirements.txt`` with hashes so you can
 install with ``pip install --require-hashes -r ...``
 
 If you want to add a package or edit the version of one you're currently
