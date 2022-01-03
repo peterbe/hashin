@@ -2442,6 +2442,48 @@ def test_get_package_hashes_without_version(murlopen, capsys):
         hashin.get_package_hashes(package="uggamugga")
 
 
+def test_get_package_hashes_consistant_order(murlopen):
+    def mocked_get(url, **options):
+        if url == "https://pypi.org/pypi/hashin/json":
+            return _Response(
+                {
+                    "info": {"version": "0.10", "name": "hashin"},
+                    "releases": {
+                        "0.10": [
+                            {
+                                "url": "https://pypi.org/packages/3.3/p/hashin/hashin-0.10-py3-none-any.whl",
+                                "digests": {"sha256": "bbbbb"},
+                            },
+                            {
+                                "url": "https://pypi.org/packages/source/p/hashin/hashin-0.10.tar.gz",
+                                "digests": {"sha256": "ccccc"},
+                            },
+                            {
+                                "url": "https://pypi.org/packages/2.7/p/hashin/hashin-0.10-py2-none-any.whl",
+                                "digests": {"sha256": "aaaaa"},
+                            },
+                        ]
+                    },
+                }
+            )
+
+        raise NotImplementedError(url)
+
+    murlopen.side_effect = mocked_get
+
+    result = hashin.get_package_hashes(
+        package="hashin", version="0.10", algorithm="sha256"
+    )
+
+    expected = {
+        "package": "hashin",
+        "version": "0.10",
+        "hashes": [{"hash": "aaaaa"}, {"hash": "bbbbb"}, {"hash": "ccccc"}],
+    }
+
+    assert result == expected
+
+
 def test_with_extras_syntax(murlopen, tmpfile):
     """When you want to add the hashes of a package by using the
     "extras notation". E.g `requests[security]`.
