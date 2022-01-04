@@ -2370,10 +2370,10 @@ def test_get_package_hashes_unknown_algorithm(murlopen, capsys):
         "version": "0.10",
         "hashes": [
             {
-                "hash": "45d1c5d2237a3b4f78b4198709fb2ecf1f781c8234ce3d94356f2100a36739433952c6c13b2843952f608949e6baa9f95055a314487cd8fb3f9d76522d8edb50"
+                "hash": "0d63bf4c115154781846ecf573049324f06b021a1d4b92da4fae2bf491da2b83a13096b14d73e73cefad36855f4fa936bac4b2357dabf05a2b1e7329ff1e5455"
             },
             {
-                "hash": "0d63bf4c115154781846ecf573049324f06b021a1d4b92da4fae2bf491da2b83a13096b14d73e73cefad36855f4fa936bac4b2357dabf05a2b1e7329ff1e5455"
+                "hash": "45d1c5d2237a3b4f78b4198709fb2ecf1f781c8234ce3d94356f2100a36739433952c6c13b2843952f608949e6baa9f95055a314487cd8fb3f9d76522d8edb50"
             },
             {
                 "hash": "c32e6d9fb09dc36ab9222c4606a1f43a2dcc183a8c64bdd9199421ef779072c174fa044b155babb12860cf000e36bc4d358694fa22420c997b1dd75b623d4daa"

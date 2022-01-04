@@ -709,7 +709,7 @@ def get_package_hashes(
 
     hashes = sorted(
         get_releases_hashes(releases=releases, algorithm=algorithm, verbose=verbose),
-        key=lambda r: r["hash"]
+        key=lambda r: r["hash"],
     )
     return {"package": package, "version": version, "hashes": hashes}
 
