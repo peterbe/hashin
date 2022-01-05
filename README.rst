@@ -270,6 +270,7 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.16.0
   * Preserve indented comments when updating requirements files.
     See https://github.com/peterbe/hashin/issues/124
 
