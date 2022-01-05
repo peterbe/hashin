@@ -272,6 +272,10 @@ Version History
 
   * Add python 3.9 and 3.10 to the test matrix.
 
+  * Preserve lexigraphical order of hashes for the output of the
+    ``get_releases_hashes`` function.
+    See https://github.com/peterbe/hashin/issues/126
+
 0.16.0
   * Preserve indented comments when updating requirements files.
     See https://github.com/peterbe/hashin/issues/124
