@@ -436,6 +436,8 @@ def amend_requirements_content(requirements, all_new_lines):
             for line in requirements.splitlines():
                 if regex.search(line):
                     lines.append(line)
+                elif lines and line.startswith(indent + padding + "#"):
+                    break
                 elif lines and line.startswith(indent + padding):
                     lines.append(line)
                 elif lines:

@@ -270,6 +270,9 @@ put it directly into ``pip``.
 Version History
 ===============
 
+  * Preserve indented comments when updating requirements files.
+    See https://github.com/peterbe/hashin/issues/124
+
   * Switch to GitHub Actions instead of TravisCI. And test ``tox`` in
     Python 3.7 and 3.8 additionally as well as upgrading lint requirements.
     See https://github.com/peterbe/hashin/pull/118

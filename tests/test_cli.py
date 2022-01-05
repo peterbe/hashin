@@ -415,6 +415,50 @@ autocompeter==1.2.3
     assert result == new_lines[2]
 
 
+def test_amend_requirements_content_replacement_keep_indented_comments():
+    requirements = (
+        """
+autocompeter==1.2.2 \\
+    --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
+    # some comment created
+    #    by pip-compile
+examplepackage==10.0.0 \\
+    --hash=sha256:fd54e979d3747be638f59de44a7f6523bed56d81961a438462b1346f49be5fe4 \\
+    --hash=sha256:12ce5c2ef718e7e31cef2e2a3bde771d9216f2cb014efba963e69cb709bcbbd1
+    # another comment
+    # indicating where this package comes from
+    """.strip()
+        + "\n"
+    )
+
+    new_lines = (
+        "autocompeter",
+        "autocompeter",
+        """
+autocompeter==1.2.3 \\
+    --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
+    """.strip()
+        + "\n",
+    )
+
+    result = hashin.amend_requirements_content(requirements, [new_lines])
+    expect = (
+        """
+autocompeter==1.2.3 \\
+    --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
+    # some comment created
+    #    by pip-compile
+examplepackage==10.0.0 \\
+    --hash=sha256:fd54e979d3747be638f59de44a7f6523bed56d81961a438462b1346f49be5fe4 \\
+    --hash=sha256:12ce5c2ef718e7e31cef2e2a3bde771d9216f2cb014efba963e69cb709bcbbd1
+    # another comment
+    # indicating where this package comes from
+    """.strip()
+        + "\n"
+    )
+    assert result == expect
+
+
 def test_amend_requirements_content_actually_not_replacement():
     requirements = (
         """
