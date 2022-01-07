@@ -270,6 +270,7 @@ put it directly into ``pip``.
 Version History
 ===============
 
+0.17.0
   * Add python 3.9 and 3.10 to the test matrix.
 
   * Preserve lexigraphical order of hashes for the output of the
