@@ -11,14 +11,7 @@ from packaging.requirements import Requirement
 import hashin
 
 
-if sys.version_info >= (3,):
-    # As in, Python 3
-    from urllib.error import HTTPError
-
-else:
-    FileNotFoundError = IOError  # ugly but necessary
-    # Python 2 does not have this exception.
-    HTTPError = None
+from urllib.error import HTTPError
 
 
 class _Response(object):
