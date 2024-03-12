@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import sys
 import json
 from unittest import mock
 
