@@ -2670,7 +2670,7 @@ def test_interactive_upgrade_request(capsys):
     assert "\nhashin " in captured.out
     assert " 0.9 " in captured.out
     assert " 0.10 " in captured.out
-    assert u"✓" in captured.out
+    assert "✓" in captured.out
 
     # This time, say no.
     with mock.patch("hashin.input", return_value="N"):
@@ -2682,7 +2682,7 @@ def test_interactive_upgrade_request(capsys):
     assert "hashin " in captured.out
     assert " 0.9 " in captured.out
     assert " 0.10 " in captured.out
-    assert u"✘" in captured.out
+    assert "✘" in captured.out
 
     # This time, say yes to everything.
     with mock.patch("hashin.input", return_value="A"):
