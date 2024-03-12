@@ -28,7 +28,7 @@ setup(
     include_package_data=True,
     python_requires=">=3.8",
     install_requires=["packaging", "pip-api"],
-    tests_require=["pytest", "mock"],
+    tests_require=["pytest"],
     setup_requires=["pytest-runner"],
     extras_require={"dev": ["tox", "twine"]},
     classifiers=[

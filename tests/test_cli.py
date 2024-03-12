@@ -3,9 +3,9 @@
 import argparse
 import sys
 import json
+from unittest import mock
 
 import pytest
-import mock
 from packaging.requirements import Requirement
 
 import hashin

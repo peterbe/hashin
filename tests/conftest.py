@@ -2,9 +2,8 @@ import os
 from tempfile import mkdtemp
 from contextlib import contextmanager
 from shutil import rmtree
+from unittest import mock
 
-
-import mock
 import pytest
 
 
