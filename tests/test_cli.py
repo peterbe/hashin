@@ -260,9 +260,9 @@ def test_main_version(mock_sys, capsys):
     assert error == 0
     captured = capsys.readouterr()
     version = captured.out.strip()
-    import pkg_resources
+    from importlib import metadata
 
-    current_version = pkg_resources.get_distribution("hashin").version
+    current_version = metadata.version("hashin")
     # No easy way to know what exact version it is
     assert version == current_version
 

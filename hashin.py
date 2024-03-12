@@ -759,9 +759,9 @@ def main():
     if "--version" in sys.argv[1:]:
         # Can't be part of argparse because the 'packages' is mandatory
         # print out the version of self
-        import pkg_resources
+        from importlib import metadata
 
-        print(pkg_resources.get_distribution("hashin").version)
+        print(metadata.version("hashin"))
         return 0
 
     parser = get_parser()
