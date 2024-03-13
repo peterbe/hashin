@@ -1,24 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import sys
 import json
+from unittest import mock
 
 import pytest
-import mock
 from packaging.requirements import Requirement
 
 import hashin
 
 
-if sys.version_info >= (3,):
-    # As in, Python 3
-    from urllib.error import HTTPError
-
-else:
-    FileNotFoundError = IOError  # ugly but necessary
-    # Python 2 does not have this exception.
-    HTTPError = None
+from urllib.error import HTTPError
 
 
 class _Response(object):
@@ -267,9 +259,9 @@ def test_main_version(mock_sys, capsys):
     assert error == 0
     captured = capsys.readouterr()
     version = captured.out.strip()
-    import pkg_resources
+    from importlib import metadata
 
-    current_version = pkg_resources.get_distribution("hashin").version
+    current_version = metadata.version("hashin")
     # No easy way to know what exact version it is
     assert version == current_version
 
@@ -2678,7 +2670,7 @@ def test_interactive_upgrade_request(capsys):
     assert "\nhashin " in captured.out
     assert " 0.9 " in captured.out
     assert " 0.10 " in captured.out
-    assert u"✓" in captured.out
+    assert "✓" in captured.out
 
     # This time, say no.
     with mock.patch("hashin.input", return_value="N"):
@@ -2690,7 +2682,7 @@ def test_interactive_upgrade_request(capsys):
     assert "hashin " in captured.out
     assert " 0.9 " in captured.out
     assert " 0.10 " in captured.out
-    assert u"✘" in captured.out
+    assert "✘" in captured.out
 
     # This time, say yes to everything.
     with mock.patch("hashin.input", return_value="A"):

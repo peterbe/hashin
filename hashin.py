@@ -22,46 +22,14 @@ from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
 from packaging.version import parse
 
-if sys.version_info >= (3,):
-    from urllib.request import urlopen
-    from urllib.error import HTTPError
-    from urllib.parse import urljoin
-else:
-    from urllib import urlopen
-    from urlparse import urljoin
-
-    input = raw_input  # noqa
-
-    if sys.version_info < (2, 7, 9):
-        import warnings
-
-        warnings.warn(
-            "In Python 2.7.9, the built-in urllib.urlopen() got upgraded "
-            "so that it, by default, does HTTPS certificate verification. "
-            "All prior versions do not. That means you run the risk of "
-            "downloading from a server that claims (man-in-the-middle "
-            "attack) to be https://pypi.python.org but actually is not. "
-            "Consider upgrading your version of Python."
-        )
+from urllib.request import urlopen
+from urllib.error import HTTPError
+from urllib.parse import urljoin
 
 DEFAULT_ALGORITHM = "sha256"
 
 DEFAULT_INDEX_URL = os.environ.get("INDEX_URL", "https://pypi.org/")
 assert DEFAULT_INDEX_URL
-
-MAX_WORKERS = None
-
-if sys.version_info >= (3, 4) and sys.version_info < (3, 5):
-    # Python 3.4 is an odd duck. It's the first Python 3 version that had
-    # concurrent.futures.ThreadPoolExecutor built in. (Python 2.7 needs a
-    # backport from PyPI)
-    # However, in Python 3.4 the max_workers (first and only argument) needs
-    # to be set. In version > 3.4 the max_workers argument can be None and
-    # it will itself figure it out by figuring out the systems number of
-    # CPUs and then multiplying that number by 5.
-    # So, exclusively for 3.4 we have to set this to some integer.
-    # Python 3.4 is small so it's not important that it's the perfect amount.
-    MAX_WORKERS = 5
 
 major_pip_version = int(pip_api.version().split(".")[0])
 if major_pip_version < 8:
@@ -285,7 +253,7 @@ def run_packages(
 
 def pre_download_packages(memory, specs, verbose=False, index_url=DEFAULT_INDEX_URL):
     futures = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         for spec in specs:
             package, _, _ = _explode_package_spec(spec)
             req = Requirement(package)
@@ -791,9 +759,9 @@ def main():
     if "--version" in sys.argv[1:]:
         # Can't be part of argparse because the 'packages' is mandatory
         # print out the version of self
-        import pkg_resources
+        from importlib import metadata
 
-        print(pkg_resources.get_distribution("hashin").version)
+        print(metadata.version("hashin"))
         return 0
 
     parser = get_parser()
