@@ -5,4 +5,4 @@ set -eo pipefail
 
 rm -fr dist/
 python setup.py sdist bdist_wheel
-twine upload dist/*
+twine upload --repository hashin dist/*
