@@ -270,6 +270,14 @@ put it directly into ``pip``.
 Version History
 ===============
 
+
+1.0.1
+  * Update change log about the 1.0.0 release.
+
+1.0.0
+  * Update ``setup.py``, ``tox.ini`` and GitHub Actions to use Python ``>=3.8``
+    and up to 3.12.
+
 0.17.0
   * Add python 3.9 and 3.10 to the test matrix.
 
