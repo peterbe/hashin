@@ -8,6 +8,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Drop permissions to minimum for security
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
