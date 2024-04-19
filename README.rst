@@ -248,8 +248,8 @@ Code Style
 All Python code should be run through `Black <https://pypi.org/project/black/>`_.
 This is checked in CI and you can test it locally with ``tox``.
 
-Also, this project uses `therapist <https://pypi.org/project/therapist/>`_
-which helps with checking code style as a git pre-commit hook. ``therapist``
+Also, this project uses `pre-commit <https://pre-commit.com/>`_
+which helps with checking code style as a git pre-commit hook. ``pre-commit``
 is used in ``tox``. To run all code style checks, use ``tox -e lint`` but
 make sure your version of ``tox`` is built on a Python 3.
 
