@@ -2189,6 +2189,26 @@ def test_expand_python_version():
         "source",
     ]
 
+    assert sorted(hashin.expand_python_version("3.10")) == [
+        "3.10",
+        "cp310",
+        "py2.py3",
+        "py3",
+        "py3.10",
+        "py310",
+        "source",
+    ]
+
+    assert sorted(hashin.expand_python_version("3.12")) == [
+        "3.12",
+        "cp312",
+        "py2.py3",
+        "py3",
+        "py3.12",
+        "py312",
+        "source",
+    ]
+
 
 def test_get_package_hashes(murlopen):
     def mocked_get(url, **options):

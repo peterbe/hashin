@@ -461,7 +461,7 @@ def expand_python_version(version):
     >>> expand_python_version('3.5')
     ['3.5', 'py3', 'py2.py3', 'cp35']
     """
-    if not re.match(r"^\d\.\d$", version):
+    if not re.match(r"^\d\.\d{1,2}$", version):
         return [version]
 
     major, minor = version.split(".")
