@@ -271,7 +271,8 @@ Version History
 ===============
 
 1.0.2
-  * Fix function ``expand_python_version`` for "3.10" and upwards
+  * Fix command line argument ``-p PYTHON_VERSION``
+    (and API function ``expand_python_version``) for "3.10" and upwards
     See https://github.com/peterbe/hashin/pull/186
 
 1.0.1
