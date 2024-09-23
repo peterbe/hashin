@@ -270,6 +270,9 @@ put it directly into ``pip``.
 Version History
 ===============
 
+1.0.2
+  * Fix function ``expand_python_version`` for "3.10" and upwards
+    See https://github.com/peterbe/hashin/pull/186
 
 1.0.1
   * Update change log about the 1.0.0 release.
