@@ -20,7 +20,7 @@ import concurrent.futures
 import pip_api
 from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
-from packaging.version import parse
+from packaging.version import parse, InvalidVersion
 
 from urllib.request import urlopen
 from urllib.error import HTTPError
@@ -436,7 +436,15 @@ def get_latest_version(data, include_prereleases):
     all_versions = []
     count_prereleases = 0
     for version in data["releases"]:
-        v = parse(version)
+        # NOTE: We ignore invalid version strings here so that pre-PEP-440
+        #       versions like "0.3.2d" from that past (say 2009) cannot break
+        #       the present
+        try:
+            v = parse(version)
+        except InvalidVersion:
+            print(f"Invalid version skipped (PEP 440): {version!r}", file=sys.stderr)
+            continue
+
         if not v.is_prerelease or include_prereleases:
             all_versions.append((v, version))
         else:
