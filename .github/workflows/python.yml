@@ -18,10 +18,10 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.9, '3.10', 3.11, 3.12]
+        python-version: [3.9, "3.10", 3.11, 3.12]
 
     steps:
-      - uses: actions/checkout@v4.2.1
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5.3.0
         with:
