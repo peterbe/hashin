@@ -1269,13 +1269,6 @@ def test_run_interactive_case_redirect(murlopen, tmpfile, capsys):
         # different case, it's also spelled totally differently.
         if url == "https://pypi.org/pypi/Hash-in/json":
             return _Response(
-                "",
-                status_code=301,
-                headers={"location": "https://pypi.org/pypi/hashin/json"},
-            )
-
-        if url == "https://pypi.org/pypi/hashin/json":
-            return _Response(
                 {
                     "info": {"version": "0.10", "name": "hashin"},
                     "releases": {
@@ -1699,19 +1692,10 @@ def test_run_update_all(murlopen, tmpfile):
     requirements file, and check with pypi.org if there's a new version."""
 
     def mocked_get(url, **options):
-        if url == "https://pypi.org/pypi/HAShin/json":
-            return _Response(
-                "",
-                status_code=301,
-                headers={"location": "https://pypi.org/pypi/hashin/json"},
-            )
-        elif url == "https://pypi.org/pypi/hashIN/json":
-            return _Response(
-                "",
-                status_code=301,
-                headers={"location": "https://pypi.org/pypi/hashin/json"},
-            )
-        elif url == "https://pypi.org/pypi/hashin/json":
+        if url in (
+            "https://pypi.org/pypi/HAShin/json",
+            "https://pypi.org/pypi/hashIN/json",
+        ):
             return _Response(
                 {
                     "info": {"version": "0.11", "name": "hashin"},

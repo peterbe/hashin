@@ -66,14 +66,7 @@ def _download(url, binary=False):
 
     # Note that urlopen will, by default, follow redirects.
     status_code = r.getcode()
-    if 301 <= status_code < 400:
-        location = r.headers.get("location", "")
-        if not location:
-            raise PackageError(
-                "No 'Location' header on {0} ({1})".format(url, status_code)
-            )
-        return _download(location)
-    elif status_code == 404:
+    if status_code == 404:
         raise PackageNotFoundError(url)
     elif status_code != 200:
         raise PackageError("Download error. {0} on {1}".format(status_code, url))
