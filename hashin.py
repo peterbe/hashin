@@ -79,7 +79,6 @@ def _download(url, binary=False):
         raise PackageError("Download error. {0} on {1}".format(status_code, url))
     if binary:
         return r.read()
-    
     content_type = _header_registry("content-type", r.headers.get("Content-Type", ""))
     encoding = content_type.params.get("charset", "utf-8")
     return r.read().decode(encoding)
