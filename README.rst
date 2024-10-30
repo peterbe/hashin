@@ -270,6 +270,19 @@ put it directly into ``pip``.
 Version History
 ===============
 
+1.0.3
+  * Drop support for Pythom 3.8.
+    See https://github.com/peterbe/hashin/pull/192 — thanks @hartwork
+
+  * Add support for Python 3.13.
+    See https://github.com/peterbe/hashin/pull/195
+    and https://github.com/peterbe/hashin/pull/204
+    — thanks @pib and @hartwork
+
+  * Be robust towards invalid versions like ``0.3.2d`` when finding
+    the latest release.
+    See https://github.com/peterbe/hashin/pull/196 — thanks @hartwork
+
 1.0.2
   * Fix command line argument ``-p PYTHON_VERSION``
     (and API function ``expand_python_version``) for "3.10" and upwards
