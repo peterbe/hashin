@@ -29,7 +29,6 @@ setup(
     python_requires=">=3.9",
     install_requires=["packaging", "pip-api"],
     tests_require=["pytest"],
-    setup_requires=["pytest-runner"],
     extras_require={"dev": ["tox", "twine"]},
     classifiers=[
         "Intended Audience :: Developers",
