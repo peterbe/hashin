@@ -270,6 +270,17 @@ put it directly into ``pip``.
 Version History
 ===============
 
+1.0.5
+  * Make ``setup.py sdist`` ship missing file ``tests/conftest.py``.
+    See https://github.com/peterbe/hashin/issues/217
+    and https://github.com/peterbe/hashin/pull/220 — thanks @hartwork
+
+  * Drop deprecated trove license classifier from ``setup.py``.
+    See https://github.com/peterbe/hashin/pull/218 — thanks @hartwork
+
+  * Resolve gone option ``tests_require`` from ``setup.py``.
+    See https://github.com/peterbe/hashin/pull/219 — thanks @hartwork
+
 1.0.4
   * Resolve dependency on pip-api.
     See https://github.com/peterbe/hashin/pull/214 — thanks @hartwork
