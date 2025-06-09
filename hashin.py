@@ -16,8 +16,8 @@ import sys
 import json
 from itertools import chain
 import concurrent.futures
+import subprocess
 
-import pip_api
 from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
 from packaging.version import parse, InvalidVersion
@@ -31,7 +31,28 @@ DEFAULT_ALGORITHM = "sha256"
 DEFAULT_INDEX_URL = os.environ.get("INDEX_URL", "https://pypi.org/")
 assert DEFAULT_INDEX_URL
 
-major_pip_version = int(pip_api.version().split(".")[0])
+
+def _pip_api_call(*args: list[str]) -> str:
+    argv = [sys.executable, "-m", "pip", *args]
+    env = os.environ | {
+        "PIP_DISABLE_PIP_VERSION_CHECK": "true",
+        "PYTHONIOENCODING": "utf8",
+    }
+    return subprocess.check_output(argv, env=env).decode()
+
+
+def _pip_api_version() -> str:
+    return _pip_api_call("--version").split(" ")[1]
+
+
+def _pip_api_hash(filename: str, algorithm: str) -> str:
+    if algorithm not in ["sha256", "sha384", "sha512"]:
+        raise ValueError(f"Algorithm {algorithm} not supported")
+    output = _pip_api_call("hash", "--algorithm", algorithm, filename)
+    return output.strip().split(":")[-1]
+
+
+major_pip_version = int(_pip_api_version().split(".")[0])
 if major_pip_version < 8:
     raise ImportError("hashin only works with pip 8.x or greater")
 
@@ -609,7 +630,7 @@ def get_releases_hashes(releases, algorithm, verbose=False):
             elif verbose:
                 _verbose("  Re-using", filename)
 
-            found["hash"] = pip_api.hash(filename, algorithm)
+            found["hash"] = _pip_api_hash(filename, algorithm)
         if verbose:
             _verbose("  Hash", found["hash"])
         yield {"hash": found["hash"]}

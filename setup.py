@@ -27,7 +27,7 @@ setup(
     url="https://github.com/peterbe/hashin",
     include_package_data=True,
     python_requires=">=3.9",
-    install_requires=["packaging", "pip-api"],
+    install_requires=["packaging", "pip"],
     tests_require=["pytest"],
     extras_require={"dev": ["tox", "twine"]},
     classifiers=[
