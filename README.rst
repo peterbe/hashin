@@ -270,6 +270,13 @@ put it directly into ``pip``.
 Version History
 ===============
 
+1.0.4
+  * Resolve dependency on pip-api.
+    See https://github.com/peterbe/hashin/pull/214 — thanks @hartwork
+
+  * Drop pytest-runner from ``setup_requires`` in ``setup.py``.
+    See https://github.com/peterbe/hashin/pull/215 — thanks @hartwork
+
 1.0.3
   * Drop support for Pythom 3.8.
     See https://github.com/peterbe/hashin/pull/192 — thanks @hartwork

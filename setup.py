@@ -16,7 +16,7 @@ except ImportError:
 
 setup(
     name="hashin",
-    version="1.0.3",
+    version="1.0.4",
     description="Edits your requirements.txt by hashing them in",
     long_description=open(path.join(_here, "README.rst")).read(),
     author="Peter Bengtsson",
