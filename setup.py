@@ -28,8 +28,7 @@ setup(
     include_package_data=True,
     python_requires=">=3.9",
     install_requires=["packaging", "pip"],
-    tests_require=["pytest"],
-    extras_require={"dev": ["tox", "twine"]},
+    extras_require={"dev": ["tox", "twine"], "tests": ["pytest"]},
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: System Administrators",
