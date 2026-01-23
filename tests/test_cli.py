@@ -267,70 +267,57 @@ def test_main_version(mock_sys, capsys):
 
 
 def test_amend_requirements_content_new():
-    requirements = (
-        """
+    requirements = """
 # empty so far
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
     new_lines = (
         "autocompeter",
         "autocompeter",
         """
 autocompeter==1.2.3 \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
-    """.strip()
-        + "\n",
+    """.strip() + "\n",
     )
     result = hashin.amend_requirements_content(requirements, [new_lines])
     assert result == requirements + new_lines[2]
 
 
 def test_amend_requirements_content_new_2():
-    requirements = (
-        """
+    requirements = """
 # empty so far
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
     new_lines = (
         "discogs-client",
         "Discogs_client",
         """
 discogs-client==1.1 \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
-    """.strip()
-        + "\n",
+    """.strip() + "\n",
     )
     result = hashin.amend_requirements_content(requirements, [new_lines])
     assert result == requirements + new_lines[2]
 
 
 def test_amend_requirements_different_old_name():
-    requirements = (
-        """
+    requirements = """
 Discogs_client==1.0 \\
     --hash=sha256:a326d1ab81164b36e7befe8e940048c4bdd79e0f78afc5f59037e0e9b1de46d4
 
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
     new_lines = (
         "discogs-client",
         "Discogs_client",
         """
 discogs-client==1.1 \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
-    """.strip()
-        + "\n",
+    """.strip() + "\n",
     )
     result = hashin.amend_requirements_content(requirements, [new_lines])
     assert result == new_lines[2]
 
 
 def test_amend_requirements_content_multiple_merge():
-    requirements = (
-        """
+    requirements = """
 autocompeter==1.2.3 \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
 otherpackage==1.0.0 \\
@@ -338,9 +325,7 @@ otherpackage==1.0.0 \\
 # Comment here
 examplepackage==9.8.6 \\
     --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
 
     all_new_lines = []
     all_new_lines.append(
@@ -350,8 +335,7 @@ examplepackage==9.8.6 \\
             """
 autocompeter==1.3.0 \\
     --hash=sha256:53929418a41295b526fbb68e43bc32fe93c3ef99c030b9e705caf1de486440de
-    """.strip()
-            + "\n",
+    """.strip() + "\n",
         )
     )
     all_new_lines.append(
@@ -362,14 +346,12 @@ autocompeter==1.3.0 \\
 examplepackage==10.0.0 \\
     --hash=sha256:fd54e979d3747be638f59de44a7f6523bed56d81961a438462b1346f49be5fe4
     --hash=sha256:12ce5c2ef718e7e31cef2e2a3bde771d9216f2cb014efba963e69cb709bcbbd1
-    """.strip()
-            + "\n",
+    """.strip() + "\n",
         )
     )
 
     result = hashin.amend_requirements_content(requirements, all_new_lines)
-    expect = (
-        """
+    expect = """
 autocompeter==1.3.0 \\
     --hash=sha256:53929418a41295b526fbb68e43bc32fe93c3ef99c030b9e705caf1de486440de
 otherpackage==1.0.0 \\
@@ -378,20 +360,15 @@ otherpackage==1.0.0 \\
 examplepackage==10.0.0 \\
     --hash=sha256:fd54e979d3747be638f59de44a7f6523bed56d81961a438462b1346f49be5fe4
     --hash=sha256:12ce5c2ef718e7e31cef2e2a3bde771d9216f2cb014efba963e69cb709bcbbd1
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
     assert result == expect
 
 
 def test_amend_requirements_content_replacement():
-    requirements = (
-        """
+    requirements = """
 autocompeter==1.2.2
     --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
 
     new_lines = (
         "autocompeter",
@@ -399,8 +376,7 @@ autocompeter==1.2.2
         """
 autocompeter==1.2.3
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
-    """.strip()
-        + "\n",
+    """.strip() + "\n",
     )
 
     result = hashin.amend_requirements_content(requirements, [new_lines])
@@ -408,8 +384,7 @@ autocompeter==1.2.3
 
 
 def test_amend_requirements_content_replacement_keep_indented_comments():
-    requirements = (
-        """
+    requirements = """
 autocompeter==1.2.2 \\
     --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
     # some comment created
@@ -419,9 +394,7 @@ examplepackage==10.0.0 \\
     --hash=sha256:12ce5c2ef718e7e31cef2e2a3bde771d9216f2cb014efba963e69cb709bcbbd1
     # another comment
     # indicating where this package comes from
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
 
     new_lines = (
         "autocompeter",
@@ -429,13 +402,11 @@ examplepackage==10.0.0 \\
         """
 autocompeter==1.2.3 \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
-    """.strip()
-        + "\n",
+    """.strip() + "\n",
     )
 
     result = hashin.amend_requirements_content(requirements, [new_lines])
-    expect = (
-        """
+    expect = """
 autocompeter==1.2.3 \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
     # some comment created
@@ -445,21 +416,16 @@ examplepackage==10.0.0 \\
     --hash=sha256:12ce5c2ef718e7e31cef2e2a3bde771d9216f2cb014efba963e69cb709bcbbd1
     # another comment
     # indicating where this package comes from
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
     assert result == expect
 
 
 def test_amend_requirements_content_actually_not_replacement():
-    requirements = (
-        """
+    requirements = """
 autocompeter==1.2.2
     --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
 
     new_lines = (
         "autocompeter",
@@ -468,8 +434,7 @@ autocompeter==1.2.2
 autocompeter==1.2.2
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
     --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
-    """.strip()
-        + "\n",
+    """.strip() + "\n",
     )
 
     result = hashin.amend_requirements_content(requirements, [new_lines])
@@ -479,13 +444,10 @@ autocompeter==1.2.2
 
 
 def test_amend_requirements_content_replacement_addition():
-    requirements = (
-        """
+    requirements = """
 autocompeter==1.2.2
     --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
 
     new_lines = (
         "autocompeter",
@@ -494,8 +456,7 @@ autocompeter==1.2.2
 autocompeter==1.2.2
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
     --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
-    """.strip()
-        + "\n",
+    """.strip() + "\n",
     )
 
     result = hashin.amend_requirements_content(requirements, [new_lines])
@@ -506,63 +467,48 @@ def test_amend_requirements_content_replacement_single_to_multi():
     """Change from autocompeter==1.2.2 to autocompeter==1.2.3
     when it was previously written as a single line and now
     ends up as a multi-line."""
-    requirements = (
-        """
+    requirements = """
 autocompeter==1.2.2 --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
     new_lines = (
         "autocompeter",
         "autocompeter",
         """
 autocompeter==1.2.3
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
-    """.strip()
-        + "\n",
+    """.strip() + "\n",
     )
     result = hashin.amend_requirements_content(requirements, [new_lines])
     assert result == new_lines[2]
 
 
 def test_amend_requirements_content_replacement_2():
-    requirements = (
-        """
+    requirements = """
 autocompeter==1.2.2 \\
     --hash=sha256:01047449bc6e46792217fe62deba683979a60b33de7efd99ed564cf43907021b \\
     --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
     new_lines = (
         "autocompeter",
         "autocompeter",
         """
 autocompeter==1.2.3 \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
-    """.strip()
-        + "\n",
+    """.strip() + "\n",
     )
     result = hashin.amend_requirements_content(requirements, [new_lines])
     assert result == new_lines[2]
 
 
 def test_amend_requirements_content_replacement_amongst_others():
-    previous = (
-        """
+    previous = """
 otherpackage==1.0.0 --hash=sha256:cHay6ATFKumO3svU3B-8qBMYb-f1_dYlR4OgClWntEI
-""".strip()
-        + "\n"
-    )
-    requirements = (
-        previous
-        + """
+""".strip() + "\n"
+    requirements = previous + """
 autocompeter==1.2.2 \\
     --hash=sha256:01047449bc6e46792217fe62deba683979a60b33de7efd99ed564cf43907021b \\
     --hash=sha256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
     new_lines = (
         "autocompeter",
         "autocompeter",
@@ -582,15 +528,11 @@ def test_amend_requirements_content_replacement_amongst_others_2():
         "--hash=sha256:2ae63cf475f0bd049b722fac20813d62aedc14957dd5a3bf00d120d2b5404460"
         "\n"
     )
-    requirements = (
-        previous
-        + """
+    requirements = previous + """
 autocompeter==1.2.2
     --hash=256:01047449bc6e46792217fe62deba683979a60b33de7efd99ed564cf43907021b \\
     --hash=256:33a5d0145e82326e781ddee1ad375f92cb84f8cfafea56e9504682adff64a5ee
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
     new_lines = (
         "autocompeter",
         "autocompeter",
@@ -605,21 +547,15 @@ autocompeter==1.2.3  \\
 
 def test_amend_requirements_content_new_similar_name():
     """This test came from https://github.com/peterbe/hashin/issues/15"""
-    previous_1 = (
-        """
+    previous_1 = """
 pytest-selenium==1.2.1 \
     --hash=sha256:e82f0a265b0e238ac42ac275d79313d0a7e0bef1a450633aeb3d6549cc14f517 \
     --hash=sha256:bd2121022ff3255ce82faec0ef3602462ec6bce9ca627b53462986cfc9b391e9
-    """.strip()
-        + "\n"
-    )
-    previous_2 = (
-        """
+    """.strip() + "\n"
+    previous_2 = """
 selenium==2.52.0 \
     --hash=sha256:820550a740ca1f746c399a0101986c0e6f94fbfe3c6f976e3f694db452cbe124
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
     new_lines = (
         "selenium",
         "selenium",
@@ -637,8 +573,7 @@ selenium==2.53.1 \
 
 def test_amend_requirements_content_indented():
     """This test came from https://github.com/peterbe/hashin/issues/112"""
-    requirements = (
-        """
+    requirements = """
 boto3==1.9.85 \\
     --hash=sha256:acfd27967cf1ba7f9d83ad6fc2011764541e4c295fe0d896ea7b495cc2f03336 \\
     --hash=sha256:96296871863e0245b04931df7dd5c583e53cadbe1d54197829b34b03b0d048a8
@@ -646,11 +581,8 @@ boto3==1.9.85 \\
     botocore==1.12.85 \\
         --hash=sha256:af727d4af0cf1ddbf84eaf1cc9d0160ff066eac7f9e6a2fe6a75ccbed4452c98 \\
         --hash=sha256:c381fd05b777f41a608ea0846a8d8ecc32077a83e456d05e824cce8d6b213e32
-    """.strip()
-        + "\n"
-    )
-    expect = (
-        """
+    """.strip() + "\n"
+    expect = """
 boto3==1.9.85 \\
     --hash=sha256:acfd27967cf1ba7f9d83ad6fc2011764541e4c295fe0d896ea7b495cc2f03336 \\
     --hash=sha256:96296871863e0245b04931df7dd5c583e53cadbe1d54197829b34b03b0d048a8
@@ -658,9 +590,7 @@ boto3==1.9.85 \\
     botocore==1.12.221 \\
         --hash=sha256:6d49deff062d2ae0f03fc26b56df8b1bb9e8b136657bcd8d84c986a4068fb784 \\
         --hash=sha256:bbee3fdcbe56ca53e2c32c6c12d174fa9b4ffe27b633183c29bd5aec9e200bae
-    """.strip()
-        + "\n"
-    )
+    """.strip() + "\n"
     new_lines = (
         "botocore",
         "botocore",
@@ -668,8 +598,7 @@ boto3==1.9.85 \\
 botocore==1.12.221 \\
     --hash=sha256:6d49deff062d2ae0f03fc26b56df8b1bb9e8b136657bcd8d84c986a4068fb784 \\
     --hash=sha256:bbee3fdcbe56ca53e2c32c6c12d174fa9b4ffe27b633183c29bd5aec9e200bae
-    """.strip()
-        + "\n",
+    """.strip() + "\n",
     )
     result = hashin.amend_requirements_content(requirements, [new_lines])
     assert result == expect
@@ -1000,8 +929,7 @@ def test_run_interactive(murlopen, tmpfile, capsys):
     murlopen.side_effect = mocked_get
 
     with tmpfile() as filename:
-        before = (
-            """
+        before = """
 # This is comment. Ignore this.
 
 requests[security]==1.2.3 \\
@@ -1011,9 +939,7 @@ hashin==0.9 \\
 enum34==1.1.5; python_version <= '3.4' \\
     --hash=sha256:12ce5c2ef718
 
-        """.strip()
-            + "\n"
-        )
+        """.strip() + "\n"
         with open(filename, "w") as f:
             f.write(before)
 
@@ -1045,8 +971,7 @@ enum34==1.1.5; python_version <= '3.4' \\
 
         # The expected output is that only "requests[security]" and "enum34"
         # get updated.
-        expected = (
-            """
+        expected = """
 # This is comment. Ignore this.
 
 requests[security]==1.2.4 \\
@@ -1058,9 +983,7 @@ enum34==1.1.6; python_version <= "3.4" \\
     --hash=sha256:bbbbb \\
     --hash=sha256:ccccc \\
     --hash=sha256:dddddd
-        """.strip()
-            + "\n"
-        )
+        """.strip() + "\n"
         with open(filename) as f:
             output = f.read()
             assert output == expected
@@ -1189,8 +1112,7 @@ def test_run_interactive_quit_and_accept_all(murlopen, tmpfile, capsys):
     murlopen.side_effect = mocked_get
 
     with tmpfile() as filename:
-        before = (
-            """
+        before = """
 # This is comment. Ignore this.
 
 requests[security]==1.2.3 \\
@@ -1200,9 +1122,7 @@ hashin==0.9 \\
 enum34==1.1.5; python_version <= '3.4' \\
     --hash=sha256:12ce5c2ef718
 
-        """.strip()
-            + "\n"
-        )
+        """.strip() + "\n"
         with open(filename, "w") as f:
             f.write(before)
 
@@ -1233,8 +1153,7 @@ enum34==1.1.5; python_version <= '3.4' \\
 
         # The expected output is that only "requests[security]" and "enum34"
         # get updated.
-        expected = (
-            """
+        expected = """
 # This is comment. Ignore this.
 
 requests[security]==1.2.4 \\
@@ -1248,9 +1167,7 @@ enum34==1.1.6; python_version <= "3.4" \\
     --hash=sha256:bbbbb \\
     --hash=sha256:ccccc \\
     --hash=sha256:dddddd
-        """.strip()
-            + "\n"
-        )
+        """.strip() + "\n"
         with open(filename) as f:
             output = f.read()
             assert output == expected
@@ -1312,16 +1229,13 @@ def test_run_interactive_case_redirect(murlopen, tmpfile, capsys):
     murlopen.side_effect = mocked_get
 
     with tmpfile() as filename:
-        before = (
-            """
+        before = """
 Django==2.1.2 \\
     --hash=sha256:efbcad7ebb47daafbcead109b38a5bd519a3c3cd92c6ed0f691ff97fcdd16b45
 
 Hash-in==0.9 \\
     --hash=sha256:12ce5c2ef718
-        """.strip()
-            + "\n"
-        )
+        """.strip() + "\n"
         with open(filename, "w") as f:
             f.write(before)
 
@@ -1335,8 +1249,7 @@ Hash-in==0.9 \\
 
         # The expected output is that only "requests[security]" and "enum34"
         # get updated.
-        expected = (
-            """
+        expected = """
 Django==2.1.3 \\
     --hash=sha256:dd46d87af4c1bf54f4c926c3cfa41dc2b5c15782f15e4329752ce65f5dad1c37
 
@@ -1344,9 +1257,7 @@ hashin==0.10 \\
     --hash=sha256:aaaaa \\
     --hash=sha256:bbbbb \\
     --hash=sha256:ccccc
-        """.strip()
-            + "\n"
-        )
+        """.strip() + "\n"
         with open(filename) as f:
             output = f.read()
             assert output == expected
@@ -2776,53 +2687,42 @@ class TestIssue116:
     """
 
     def test_amend_requirements_content_new_without_env_markers(self):
-        requirements = (
-            """
+        requirements = """
 # empty so far
-        """.strip()
-            + "\n"
-        )
+        """.strip() + "\n"
         new_lines = (
             "discogs-client",
             "discogs-client",
             """
 discogs-client==1.1 \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
-        """.strip()
-            + "\n",
+        """.strip() + "\n",
         )
         result = hashin.amend_requirements_content(requirements, [new_lines])
         assert result == requirements + new_lines[2]
 
     def test_amend_requirements_content_new_with_env_markers(self):
-        requirements = (
-            """
+        requirements = """
 # empty so far
-        """.strip()
-            + "\n"
-        )
+        """.strip() + "\n"
         new_lines = (
             "discogs-client; python_version <= '3.4'",
             "discogs-client; python_version <= '3.4'",
             """
 discogs-client==1.1; python_version <= '3.4' \\
     --hash=sha256:4d64ed1b9e0e73095f5cfa87f0e97ddb4c840049e8efeb7e63b46118ba1d623a
-        """.strip()
-            + "\n",
+        """.strip() + "\n",
         )
         result = hashin.amend_requirements_content(requirements, [new_lines])
         assert result == requirements + new_lines[2]
 
     def test_amend_requirements_different_old_name_without_env_markers(self):
-        requirements = (
-            """
+        requirements = """
 readme_renderer==25.0 \\
     --hash=sha256:1b6d8dd1673a0b293766b4106af766b6eff3654605f9c4f239e65de6076bc222 \\
     --hash=sha256:e67d64242f0174a63c3b727801a2fff4c1f38ebe5d71d95ff7ece081945a6cd4
 
-        """.strip()
-            + "\n"
-        )
+        """.strip() + "\n"
 
         new_lines = (
             "readme-renderer",
@@ -2832,22 +2732,18 @@ readme-renderer==26.0 \\
     --hash=sha256:cbe9db71defedd2428a1589cdc545f9bd98e59297449f69d721ef8f1cfced68d \\
     --hash=sha256:cc4957a803106e820d05d14f71033092537a22daa4f406dfbdd61177e0936376
 
-        """.strip()
-            + "\n",
+        """.strip() + "\n",
         )
         result = hashin.amend_requirements_content(requirements, [new_lines])
         assert result == new_lines[2]
 
     def test_amend_requirements_different_old_name_with_env_markers(self):
-        requirements = (
-            """
+        requirements = """
 readme_renderer==25.0; python_version <= "3.4" \\
     --hash=sha256:1b6d8dd1673a0b293766b4106af766b6eff3654605f9c4f239e65de6076bc222 \\
     --hash=sha256:e67d64242f0174a63c3b727801a2fff4c1f38ebe5d71d95ff7ece081945a6cd4
 
-        """.strip()
-            + "\n"
-        )
+        """.strip() + "\n"
 
         new_lines = (
             "readme-renderer",
@@ -2857,22 +2753,18 @@ readme-renderer==26.0; python_version <= "3.4" \\
     --hash=sha256:cbe9db71defedd2428a1589cdc545f9bd98e59297449f69d721ef8f1cfced68d \\
     --hash=sha256:cc4957a803106e820d05d14f71033092537a22daa4f406dfbdd61177e0936376
 
-        """.strip()
-            + "\n",
+        """.strip() + "\n",
         )
         result = hashin.amend_requirements_content(requirements, [new_lines])
         assert result == new_lines[2]
 
     def test_amend_requirements_without_env_markers_same_version(self):
-        requirements = (
-            """
+        requirements = """
 readme_renderer==25.0 \\
     --hash=sha256:1b6d8dd1673a0b293766b4106af766b6eff3654605f9c4f239e65de6076bc222 \\
     --hash=sha256:e67d64242f0174a63c3b727801a2fff4c1f38ebe5d71d95ff7ece081945a6cd4
 
-        """.strip()
-            + "\n"
-        )
+        """.strip() + "\n"
 
         new_lines = (
             "readme-renderer",
@@ -2882,22 +2774,18 @@ readme_renderer==25.0 \\
     --hash=sha256:1b6d8dd1673a0b293766b4106af766b6eff3654605f9c4f239e65de6076bc222 \\
     --hash=sha256:e67d64242f0174a63c3b727801a2fff4c1f38ebe5d71d95ff7ece081945a6cd4
 
-        """.strip()
-            + "\n",
+        """.strip() + "\n",
         )
         result = hashin.amend_requirements_content(requirements, [new_lines])
         assert result == requirements
 
     def test_amend_requirements_with_env_markers_same_version(self):
-        requirements = (
-            """
+        requirements = """
 readme_renderer==25.0; python_version <= "3.4" \\
     --hash=sha256:1b6d8dd1673a0b293766b4106af766b6eff3654605f9c4f239e65de6076bc222 \\
     --hash=sha256:e67d64242f0174a63c3b727801a2fff4c1f38ebe5d71d95ff7ece081945a6cd4
 
-        """.strip()
-            + "\n"
-        )
+        """.strip() + "\n"
 
         new_lines = (
             "readme-renderer",
@@ -2907,8 +2795,7 @@ readme_renderer==25.0; python_version <= "3.4" \\
     --hash=sha256:1b6d8dd1673a0b293766b4106af766b6eff3654605f9c4f239e65de6076bc222 \\
     --hash=sha256:e67d64242f0174a63c3b727801a2fff4c1f38ebe5d71d95ff7ece081945a6cd4
 
-        """.strip()
-            + "\n",
+        """.strip() + "\n",
         )
         result = hashin.amend_requirements_content(requirements, [new_lines])
         assert result == requirements

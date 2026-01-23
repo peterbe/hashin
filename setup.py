@@ -2,7 +2,6 @@ from os import path
 
 from setuptools import setup
 
-
 _here = path.dirname(__file__)
 
 # Prevent spurious errors during `python setup.py test`, a la
