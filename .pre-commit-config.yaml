@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
     hooks:
       - id: check-merge-conflict
       - id: check-yaml
@@ -8,11 +8,11 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/psf/black
-    rev: 26.3.1
+    rev: c6755bb741b6481d6b3d3bb563c83fa060db96c9  # frozen: 26.3.1
     hooks:
       - id: black
 
   - repo: https://github.com/PyCQA/flake8
-    rev:  7.3.0
+    rev: c48217e1fc006c2dddd14df54e83b67da15de5cd  # frozen: 7.3.0
     hooks:
       - id: flake8
