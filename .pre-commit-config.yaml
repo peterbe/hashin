@@ -18,6 +18,6 @@ repos:
       - id: flake8
 
   - repo: https://github.com/rstcheck/rstcheck
-    rev: d8774e96810795967ed9603f445b4e751e7b313f  # frozen: v6.3.0
+    rev: ee160e7d8f0f9f25a9b37492312c23757b1ab38a  # frozen: v6.3.1
     hooks:
       - id: rstcheck
