@@ -596,8 +596,10 @@ def filter_releases(releases, python_versions):
 
 
 def get_package_data(package, index_url, verbose=False):
-    path = "/pypi/%s/json" % package
-    url = urljoin(index_url, path)
+    # A relative path keeps the index URL's own path: an index served under a
+    # path (an Artifactory or Nexus PyPI proxy) would otherwise lose it.
+    base = index_url if index_url.endswith("/") else index_url + "/"
+    url = urljoin(base, "pypi/%s/json" % package)
     if verbose:
         print(url)
     content = json.loads(_download(url))
