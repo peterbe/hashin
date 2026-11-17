@@ -112,6 +112,32 @@ def test_get_hashes_error(murlopen):
         hashin.run("somepackage==1.2.3", "doesntmatter.txt", "sha256")
 
 
+@pytest.mark.parametrize(
+    "index_url, expected",
+    [
+        ("https://pypi.org/", "https://pypi.org/pypi/somepackage/json"),
+        ("https://pypi.org", "https://pypi.org/pypi/somepackage/json"),
+        (
+            "https://registry.example.com/artifactory/api/pypi/pypi-remote/",
+            "https://registry.example.com/artifactory/api/pypi/pypi-remote/pypi/somepackage/json",
+        ),
+        (
+            "https://registry.example.com/artifactory/api/pypi/pypi-remote",
+            "https://registry.example.com/artifactory/api/pypi/pypi-remote/pypi/somepackage/json",
+        ),
+    ],
+)
+def test_get_package_data_keeps_the_index_path(murlopen, index_url, expected):
+    def mocked_get(url, **options):
+        if url == expected:
+            return _Response({"info": {"version": "1.2.3"}, "releases": {}})
+        raise NotImplementedError(url)
+
+    murlopen.side_effect = mocked_get
+    data = hashin.get_package_data("somepackage", index_url)
+    assert data["info"]["version"] == "1.2.3"
+
+
 def test_non_200_ok_download(murlopen):
     def mocked_get(url, **options):
         return _Response({}, status_code=403)
